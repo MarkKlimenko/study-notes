@@ -5,9 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b0285e1a-39b8-4104-b526-987346d8b8b8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-13-34-42-642.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-13-54-23-970.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-13-56-55-420.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-14-22-35-020.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-14-51-02-644.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-14-53-58-722.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-14-57-07-399.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-15-01-32-782.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-15-10-27-111.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-15-12-35-398.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-15-25-56-245.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-15-26-12-924.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-15-41-28-257.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-15-41-50-465.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/content/kafka/index.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/content/kafka/index.adoc" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -59,7 +67,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1714071733898</updated>
-      <workItem from="1714071735358" duration="3282000" />
+      <workItem from="1714071735358" duration="9721000" />
     </task>
     <task id="LOCAL-00001" summary="Add">
       <created>1714072173644</created>
@@ -75,7 +83,14 @@
       <option name="project" value="LOCAL" />
       <updated>1714073505737</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Add">
+      <created>1714075029841</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1714075029841</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

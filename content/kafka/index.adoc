@@ -13,6 +13,8 @@ image::images/image-2024-04-25-13-34-42-642.png[width=500]
 
 === Main features
 
+* *Multiple brokers across different machines*
+
 * *Multiple producers and consumers at any given time.*
 This feature is provided by topics divided by partitions.
 
@@ -56,20 +58,245 @@ image::images/image-2024-04-25-13-54-23-970.png[width=500]
 
 Topics are like a Queues in the Rabbit.
 
-== Partitions
+=== Create topic
 
-Topics are divided to partitions.
+[source,shell]
+----
+bin/kafka-topics.sh --create --bootstrap-server localhost:9094
+--topic kinaction_helloworld --partitions 3 --replication-factor 3
+----
+
+=== Get topics
+
+[source,shell]
+----
+bin/kafka-topics.sh --list --bootstrap-server localhost:9094
+----
+
+=== Describe topic
+
+[source,shell]
+----
+bin/kafka-topics.sh --bootstrap-server localhost:9094 \
+--describe --topic kinaction_helloworld
+
+Topic:kinaction_helloworld PartitionCount:3 ReplicationFactor:3 Configs:
+Topic: kinaction_helloworld Partition: 0 Leader: 0 Replicas: 0,1,2 Isr: 0,1,2
+Topic: kinaction_helloworld Partition: 1 Leader: 1 Replicas: 1,2,0 Isr: 1,2,0
+Topic: kinaction_helloworld Partition: 2 Leader: 2 Replicas: 2,0,1 Isr: 2,0,1
+----
+
+* *Partition.* In this situation all partitions are spread between nodes of cluster.
+* *Leader.* And each partition has its own leader.
+* *Replicas.* Topic has several replicas.
+* *Isr.* Stands for in-sync replicas.
+In-sync replicas show which brokers are current and not lagging behind the leader.
+
+image::images/image-2024-04-25-14-22-35-020.png[width=500]
+
+=== Write to topic
+
+[source,shell]
+----
+bin/kafka-console-producer.sh --bootstrap-server localhost:9094 \
+--topic kinaction_helloworld
+----
+
+=== Read from topic
+
+[source,shell]
+----
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9094 \
+--topic kinaction_helloworld --from-beginning
+----
+
+If we eliminate the `--from-beginning` option when we restart command.
+We will see only messages that were produced since the consumer console was started show up.
+This is provided by `offset` property.
+
+== Partitions
 
 image::images/image-2024-04-25-13-56-55-420.png[width=500]
 
-== Producer partitions workflow
+*Topics are divided to partitions*
 
-== Consumer partitions workflow
+Each partition can be hosted on the different server, which provides horizontal scalability.
+Capacity of a given topic isn't limited by the available disk space on one server.
 
-== Retention policy
+*How to divide to partitions?*
 
-== Compaction
+Topic can be divided to partitions in creation time.
+By parameter `--partitions 3`
+
+=== How producer spreads data between partitions?
+
+==== Round Robin
+
+The producer does not care what partition a specific message is written to and will balance messages over all partitions of a topic evenly.
+
+==== By key
+
+If the key isn't null.
+Kafka uses the formula to calculate which partition the message will be sent to.
+Records with the same key will always be sent to the same partition and in order.
+
+image::images/image-2024-04-25-14-51-02-644.png[width=500]
+
+==== Producer and acc
+
+When broker receives the messages, it sends back a response.
+If the messages were successfully written to Kafka, return a RecordMetaData object contains <topic, partition, offset>.
+If failed, the broker will return an error.
+The producer may retry sending the message a few more times before giving up and returning an error.
+
+==== Batches
+
+Messages are written into Kafka in batches.
+A batch is just a collection of messages, all of which are being produced to the same topic and partition.
+
+*linger.ms* Number of milliseconds a producer is willing to wait before sending a batch out.
+
+*linger.ms=5* we increase the chances of messages being sent together in a batch.
+At the expense of introducing a small delay, we can increase throughput, compression and efficiency for our producer
+
+*batch.size* Maximum number of bytes that will be included in a batch. The default is 16KB
+
+Increase batch size to 32KB or 64KB can help increasing throughput
+A batch is allocated per partition, make sure don't set it to a number that's too high
+
+If the producer produces faster than the broker can take, the records will be buffered in memory
+
+*buffer.memory=33554432(32MB)*
+If the buffer is full(all 32 MB), .send() method wil start to block
+
+**max.block.ms=60000 **
+The time .send() method will block until throwing an exception
+
+=== How consumer gets data from partitions?
+
+* The consumer subscribes to one or more topics and reads the messages in the order in which they were produced.
+* The consumer keeps track of which message it has already consumed by keeping track of the `offset` of messages.
+
+==== Offset
+
+Each consumer in `consumer group` has its own offset
+
+image::images/image-2024-04-25-14-53-58-722.png[width=500]
+
+Delivery semantics for consumers
+
+image::images/image-2024-04-25-15-41-28-257.png[width=500]
+image::images/image-2024-04-25-15-41-50-465.png[width=500]
+
+==== Consumer group
+
+Consumers work as part of a consumer group, which is one or more consumers that work together to consume a topic.
+Group assures that each partition is only consumed by one member.
+If a single consumer fails, the remaining members of group will rebalance the partitions being consumed to take over the missing member.
+
+image::images/image-2024-04-25-14-57-07-399.png[width=500]
+
+IMPORTANT: One consumer to multiple partitions but one partition for one consumer.
+
+Using additional consumer group
+
+image::images/image-2024-04-25-15-01-32-782.png[width=500]
+
+=== Partitions count
+
+* Small cluster(<6 brokers>): #partitions per topic = 2 x number of brokers
+* Big cluster(>12 brokers): 1 x # of brokers
+
+== Broker and clusters
+
+A single Kafka server is called a broker.
+The broker receives messages from producers, assigns offsets to them and commits the messages to storage on disk.
+Brokers are designed to operate as part of a cluster.
+
+Kafka uses `Apache Zookeeper` to maintain the list of brokers and offsets.
+
+IMPORTANT: Now cluster could be created without Zookeeper
+
+image::images/image-2024-04-25-15-10-27-111.png[width=500]
+
+=== Cluster controller
+
+In a cluster, one broker will also function as the cluster controller
+
+A cluster controller is one of the kafka brokers that in addition to the usual broker functionality:
+
+* administrative operations: assigning partitions to brokers and monitoring for broker failures
+* electing partition leaders(explained in the next section)
+* Cluster only have one controller at a time
+
+The first broker that starts in the cluster becomes the controller.
 
 == Replication
 
-== Batch data
+It guarantees availability and durability when individual nodes inevitably fail.
+
+image::images/image-2024-04-25-15-12-35-398.png[width=500]
+
+Each broker holds a number of partitions and each of these partitions can be either a leader or a replica for a topic
+
+*Leader replica*
+
+* Each partition has a single replica designated as the leader.
+* All produce and consume requests go through the leader, in order to guarantee consistency.
+
+*Follower replica*
+
+* All replicas for a partition that are not leaders are called followers
+* Followers don't serve client requests
+* When a leader crashes, one of follower replica will be promoted to become the leader
+* Only in-sync replicas are eligible to be elected as partition leader in case the existing leader fail
+
+=== How to set replication?
+
+Set replication factor in time of topic creation.
+By parameter `--replication-factor 3`
+
+=== Replication count
+
+should be at least 2, usually 3, maximum 4
+
+=== How to write to multiple replications?
+
+*acks*
+
+Controls how many partition replicas must receive the record before the producer can consider write successful.
+
+**acks=0**
+The producer will not wait for a reply from the broker before assuming the message was sent successfully.
+The message may be lost, but it can send messages as fast as the network will support.
+
+*acks=1*
+The producer will consider write successful when the leader receives the record.
+
+*acks=all*
+The producer will consider write successful when all of the in-sync replicas receive the record.
+
+
+== Retention and compaction policy
+
+Retention is the durable storage of messages for some period of time.
+For example, a tracking topic might be retained for several days, whereas application metrics might be retained for only a few hours.
+
+*log.cleanup.policy=delete*
+
+Delete based on age of data(default is a week)
+Deleted based on max size of log(default is -1 == infinite)
+
+image::images/image-2024-04-25-15-25-56-245.png[width=500]
+
+*log.cleanup.policy=compact*
+
+Delete based on keys of your message
+Will delete old duplicate keys after the active segment is committed
+
+image::images/image-2024-04-25-15-26-12-924.png[width=500]
+
+*log.retention.hours*
+
+
+*log.retention.bytes*
