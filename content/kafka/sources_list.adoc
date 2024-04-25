@@ -1,0 +1,31 @@
+= Kafka sources list
+:sectnums:
+:toc: left
+:toclevels: 5
+:icons: font
+:source-highlighter: coderay
+
+**Источники расположены в предпочтительной для изучения последовательности**
+
+== https://github.com/anhthii/kafka-notes[anhthii/kafka-notes]
+
+Краткая информация, собранная из различных источников.
+Не идеально систематизирована, но подходит для ознакомления
+
+== Kafka in action
+
+link:./sources/Kafka_in_Action_2022.pdf[Kafka_in_Action_2022.pdf]
+
+== Kafka the definitive guide
+
+link:./sources/Kafka_The_Definitive_Guide_2022.epub[Kafka_The_Definitive_Guide_2022.epub]
+
+== Kafka streams in action
+
+== https://www.conduktor.io/kafka/kafka-fundamentals/[Онлайн курс conduktor kafka-fundamentals]
+
+Бесплатный курс
+
+== https://www.udemy.com/course/apache-kafka/?couponCode=ST6MT42324[Онлайн курс udemy apache-kafka]
+
+Платный курс
