@@ -5,10 +5,71 @@
 :icons: font
 :source-highlighter: coderay
 
+== Introduction
+
+Publish-subscribe based durable messaging system.
+
+image::images/image-2024-04-25-13-34-42-642.png[width=500]
+
+=== Main features
+
+* *Multiple producers and consumers at any given time.*
+This feature is provided by topics divided by partitions.
+
+* *Disk-Based retention.*
+All information is stored to disk for some period of time (Retention policy).
+
+* *High Performance.*
+Multiple producers and consumers.
+Multiple nodes in cluster.
+
+* *Replication between nodes.*
+Provides strong reliability.
+
+* *Batch data in chunks.*
+This minimises cross machine latency.
+
+* *Sequential Disk Access.*
+Consumer reads data in sequential manner and don't have random access.
+
+=== Alternatives
+
+* RabbitMq
+* ActiveMq
+* Redis (for queues)
+
+=== Use Cases
+
+* *Activity tracking*
+* *Messaging*
+* *Metrics and logging.* For example with ELK stack
+* *Commit log.* For synchronisation between DB and search engine (Solr)
+* *Stream processing*
+
+== Log
+
+All information is stored into the log files sequentially
+
+image::images/image-2024-04-25-13-54-23-970.png[width=500]
+
 == Topics
+
+Topics are like a Queues in the Rabbit.
+
 == Partitions
+
+Topics are divided to partitions.
+
+image::images/image-2024-04-25-13-56-55-420.png[width=500]
+
 == Producer partitions workflow
+
 == Consumer partitions workflow
+
 == Retention policy
+
 == Compaction
+
 == Replication
+
+== Batch data
