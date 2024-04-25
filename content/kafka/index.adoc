@@ -48,6 +48,44 @@ Consumer reads data in sequential manner and don't have random access.
 * *Commit log.* For synchronisation between DB and search engine (Solr)
 * *Stream processing*
 
+== Start kafka
+
+*docker-compose.yml*
+
+[source,yaml]
+----
+version: '2'
+services:
+  broker:
+    image: confluentinc/cp-kafka:7.4.1
+    hostname: broker
+    container_name: broker
+    ports:
+    - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+      KAFKA_LISTENERS: PLAINTEXT://broker:9092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+----
+
+*Use in docker*
+[source,shell]
+----
+docker exec -it broker bash
+----
+
 == Topics
 
 Topics are like a Queues in the Rabbit.
@@ -58,6 +96,10 @@ Topics are like a Queues in the Rabbit.
 ----
 bin/kafka-topics.sh --create --bootstrap-server localhost:9094
 --topic kinaction_helloworld --partitions 3 --replication-factor 3
+
+OR
+
+kafka-topics --create --topic example-topic --bootstrap-server broker:9092 --replication-factor 1 --partitions 2
 ----
 
 === Get topics
@@ -65,6 +107,10 @@ bin/kafka-topics.sh --create --bootstrap-server localhost:9094
 [source,shell]
 ----
 bin/kafka-topics.sh --list --bootstrap-server localhost:9094
+
+OR
+
+kafka-topics --list --bootstrap-server broker:9092
 ----
 
 === Describe topic
@@ -73,6 +119,11 @@ bin/kafka-topics.sh --list --bootstrap-server localhost:9094
 ----
 bin/kafka-topics.sh --bootstrap-server localhost:9094 \
 --describe --topic kinaction_helloworld
+
+OR
+
+kafka-topics --bootstrap-server broker:9092 \
+--describe --topic example-topic
 
 Topic:kinaction_helloworld PartitionCount:3 ReplicationFactor:3 Configs:
 Topic: kinaction_helloworld Partition: 0 Leader: 0 Replicas: 0,1,2 Isr: 0,1,2
