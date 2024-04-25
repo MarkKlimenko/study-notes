@@ -1,9 +1,14 @@
-= Уроки Java
+= Kafka notes
 :sectnums:
 :toc: left
 :toclevels: 5
 :icons: font
 :source-highlighter: coderay
 
-include::content/learning_plan.adoc[]
-include::content/lessons.adoc[]
+== Topics
+== Partitions
+== Producer partitions workflow
+== Consumer partitions workflow
+== Retention policy
+== Compaction
+== Replication

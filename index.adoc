@@ -1,9 +1,9 @@
-= Уроки Java
+= Study notes
 :sectnums:
 :toc: left
 :toclevels: 5
 :icons: font
 :source-highlighter: coderay
 
-include::content/learning_plan.adoc[]
-include::content/lessons.adoc[]
+
+
