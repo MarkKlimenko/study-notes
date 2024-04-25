@@ -48,12 +48,6 @@ Consumer reads data in sequential manner and don't have random access.
 * *Commit log.* For synchronisation between DB and search engine (Solr)
 * *Stream processing*
 
-== Log
-
-All information is stored into the log files sequentially
-
-image::images/image-2024-04-25-13-54-23-970.png[width=500]
-
 == Topics
 
 Topics are like a Queues in the Rabbit.
@@ -300,3 +294,27 @@ image::images/image-2024-04-25-15-26-12-924.png[width=500]
 
 
 *log.retention.bytes*
+
+== Kafka’s high-level architecture
+
+In general, core Kafka can be thought of as Scala application processes that run on a Java virtual machine (JVM).
+Kafka uses operating system’s _page cache_ by avoiding caching in the __JVM heap__.
+Another design consideration is the access pattern of data. When new messages
+flood in, it is likely that the latest messages are of more interest to many consumers,
+which can then be served from this cache.
+
+image::images/image-2024-04-25-15-54-16-199.png[width=500]
+
+All information is stored into the log files sequentially
+
+image::images/image-2024-04-25-13-54-23-970.png[width=500]
+
+Kafka Streams API depends on core Kafka. While event
+messages continue to come into the cluster, a consumer application can provide the
+end user with updated information continuously rather than wait for a query to pull a
+static snapshot of the events.
+
+image::images/image-2024-04-25-16-02-36-522.png[width=500]
+
+
+
