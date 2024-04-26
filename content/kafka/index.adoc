@@ -81,6 +81,7 @@ services:
 ----
 
 *Use in docker*
+
 [source,shell]
 ----
 docker exec -it broker bash
@@ -101,6 +102,14 @@ OR
 
 kafka-topics --create --topic example-topic --bootstrap-server broker:9092 --replication-factor 1 --partitions 2
 ----
+
+*bootstrap.servers*
+Property that can take many or just one initial broker.
+By connecting to this broker, the client can discover the metadata it needs, which includes data about other brokers in the cluster as well.
+
+Disable auto creation for topics using property *auto.create.topics.enable* to false.
+
+Attempting to create a topic with the number of replicas being greater than the total number of brokers results in an error: *InvalidReplicationFactorException*.
 
 === Get topics
 
@@ -134,7 +143,7 @@ Topic: kinaction_helloworld Partition: 2 Leader: 2 Replicas: 2,0,1 Isr: 2,0,1
 * *Partition.* In this situation all partitions are spread between nodes of cluster.
 * *Leader.* And each partition has its own leader.
 * *Replicas.* Topic has several replicas.
-* *Isr.* Stands for in-sync replicas.
+* *Isr.* Stands for in-sync replicas (ISRs).
 In-sync replicas show which brokers are current and not lagging behind the leader.
 
 image::images/image-2024-04-25-14-22-35-020.png[width=500]
@@ -158,6 +167,14 @@ bin/kafka-console-consumer.sh --bootstrap-server localhost:9094 \
 If we eliminate the `--from-beginning` option when we restart command.
 We will see only messages that were produced since the consumer console was started show up.
 This is provided by `offset` property.
+
+=== Delete topic
+
+[source,shell]
+----
+bin/kafka-topics.sh --delete --bootstrap-server localhost:9094
+--topic kinaction_topicandpart
+----
 
 == Partitions
 
@@ -187,7 +204,7 @@ Records with the same key will always be sent to the same partition and in order
 
 image::images/image-2024-04-25-14-51-02-644.png[width=500]
 
-==== Producer and acc
+==== Producer and acknowledgments
 
 When broker receives the messages, it sends back a response.
 If the messages were successfully written to Kafka, return a RecordMetaData object contains <topic, partition, offset>.
@@ -204,10 +221,10 @@ A batch is just a collection of messages, all of which are being produced to the
 *linger.ms=5* we increase the chances of messages being sent together in a batch.
 At the expense of introducing a small delay, we can increase throughput, compression and efficiency for our producer
 
-*batch.size* Maximum number of bytes that will be included in a batch. The default is 16KB
+*batch.size* Maximum number of bytes that will be included in a batch.
+The default is 16KB
 
-Increase batch size to 32KB or 64KB can help increasing throughput
-A batch is allocated per partition, make sure don't set it to a number that's too high
+Increase batch size to 32KB or 64KB can help increasing throughput A batch is allocated per partition, make sure don't set it to a number that's too high
 
 If the producer produces faster than the broker can take, the records will be buffered in memory
 
@@ -216,6 +233,32 @@ If the buffer is full(all 32 MB), .send() method wil start to block
 
 **max.block.ms=60000 **
 The time .send() method will block until throwing an exception
+
+==== Producer properties
+
+* *message.timestamp.type*
+`CreateTime` uses the time set by the client, whereas setting it to `LogAppendTime` uses the broker time
+
+* *acks*
+Number of replica acknowledgments that a producer requires before success is established
+
+* *bootstrap.servers*
+One or more Kafka brokers to connect for startup
+
+* *value.serializer*
+The class that’s used for serialization of the value.
+AVRO may be used
+
+* *key.serializer*
+The class that’s used for serialization of the key.
+AVRO may be used
+
+==== Partitioner
+
+Configuration as a code that defines what partition will be used by producer.
+
+**Use case.
+** Separate partition can be used for ERROR alerts to mace sure that they are processed ASAP.
 
 === How consumer gets data from partitions?
 
@@ -246,6 +289,45 @@ IMPORTANT: One consumer to multiple partitions but one partition for one consume
 Using additional consumer group
 
 image::images/image-2024-04-25-15-01-32-782.png[width=500]
+
+==== Consumer properties
+
+* **bootstrap.servers**
+One or more Kafka brokers to connect on startup
+
+* **value.deserializer**
+Needed for deserialization of the value
+
+* **key.deserializer**
+Needed for deserialization of the key
+
+* **group.id**
+A name that’s used to join a consumer group
+
+* **client.id**
+An ID to identify a user (we will use this in chapter 10)
+
+* **heartbeat.interval.ms**
+Interval for consumer’s pings to the group coordinator
+
+==== Partition assignment strategy for consumer
+
+* **range assigner**
+Uses a single topic to find the number of partitions (ordered by number) and then is broken down by the number of consumers.
+If the split is not even, then the first consumers (using alphabetical order) get the remaining partitions.
+
+* **round-robin**
+Strategy is where the partitions are uniformly distributed down the row of consumers.
+
+* **sticky**
+???
+TODO
+
+* **cooperative-sticky**
+???
+TODO
+
+image::images/image-2024-04-25-17-59-28-130.png[width=500]
 
 === Partitions count
 
@@ -303,9 +385,9 @@ By parameter `--replication-factor 3`
 
 === Replication count
 
-should be at least 2, usually 3, maximum 4
+Should be at least 2, usually 3, maximum 4
 
-=== How to write to multiple replications?
+=== How to write to multiple replications? (acknowledgments)
 
 *acks*
 
@@ -318,9 +400,14 @@ The message may be lost, but it can send messages as fast as the network will su
 *acks=1*
 The producer will consider write successful when the leader receives the record.
 
-*acks=all*
+*acks=all* or *acks=-1*
 The producer will consider write successful when all of the in-sync replicas receive the record.
 
+=== Leader election after fail
+
+When `unclean.leader.election.enable is true`, the controller selects a leader for a partition even if it is not up to date so that the system keeps running.
+The problem with this is that data could be lost because none of the replicas have all the data at the time of the leader’s failure.
+At the cost of missing data, this option allows us to keep serving clients.
 
 == Retention and compaction policy
 
@@ -329,30 +416,41 @@ For example, a tracking topic might be retained for several days, whereas applic
 
 *log.cleanup.policy=delete*
 
-Delete based on age of data(default is a week)
-Deleted based on max size of log(default is -1 == infinite)
+Delete based on age of data(default is a week) Deleted based on max size of log(default is -1 == infinite)
 
 image::images/image-2024-04-25-15-25-56-245.png[width=500]
 
 *log.cleanup.policy=compact*
 
-Delete based on keys of your message
-Will delete old duplicate keys after the active segment is committed
+Delete based on keys of your message Will delete old duplicate keys after the active segment is committed
 
 image::images/image-2024-04-25-15-26-12-924.png[width=500]
 
 *log.retention.hours*
 
+*log.retention.minutes*
+
+*log.retention.ms*
 
 *log.retention.bytes*
+
+By setting both `log.retention.bytes` and `log.retention.ms` to –1, we can effectively turn off data deletion
+
+=== Creating a compacted topic
+
+[source,shell]
+----
+bin/kafka-topics.sh --create --bootstrap-server localhost:9094 \
+--topic kinaction_compact --partitions 3 --replication-factor 3 \
+--config cleanup.policy=compact
+----
 
 == Kafka’s high-level architecture
 
 In general, core Kafka can be thought of as Scala application processes that run on a Java virtual machine (JVM).
 Kafka uses operating system’s _page cache_ by avoiding caching in the __JVM heap__.
-Another design consideration is the access pattern of data. When new messages
-flood in, it is likely that the latest messages are of more interest to many consumers,
-which can then be served from this cache.
+Another design consideration is the access pattern of data.
+When new messages flood in, it is likely that the latest messages are of more interest to many consumers, which can then be served from this cache.
 
 image::images/image-2024-04-25-15-54-16-199.png[width=500]
 
@@ -360,12 +458,35 @@ All information is stored into the log files sequentially
 
 image::images/image-2024-04-25-13-54-23-970.png[width=500]
 
-Kafka Streams API depends on core Kafka. While event
-messages continue to come into the cluster, a consumer application can provide the
-end user with updated information continuously rather than wait for a query to pull a
-static snapshot of the events.
+=== Viewing logs
+
+[source,shell]
+----
+bin/kafka-dump-log.sh --print-data-log \
+--files /tmp/kafkainaction/kafka-logs-0/kinaction_topicandpart-1/*.log \
+| awk -F: '{print $NF}' | grep kinaction
+----
+
+By using the `--files` option, which is required, we chose to look at a segment file.
+Assuming the command is successful, we should see a list of messages printed to the screen.
+Without using `awk and grep`, you would also see offsets as well as other related metadata like compression codecs.
+
+== Kafka tools
+
+=== Kafka connect
+
+Move data into and out of Apache Kafka
+
+* Read/write content from/to files/database
+
+=== Kafka streams
+
+Kafka Streams API depends on core Kafka.
+While event messages continue to come into the cluster, a consumer application can provide the end user with updated information continuously rather than wait for a query to pull a static snapshot of the events.
 
 image::images/image-2024-04-25-16-02-36-522.png[width=500]
+
+=== Apache Flume
 
 
 
