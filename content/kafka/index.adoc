@@ -557,7 +557,9 @@ services:
 docker exec -it broker bash
 ----
 
-=== Create topic
+=== Topics manipulation
+
+==== Create topic
 
 [source,shell]
 ----
@@ -577,7 +579,7 @@ Disable auto creation for topics using property *auto.create.topics.enable* to f
 
 Attempting to create a topic with the number of replicas being greater than the total number of brokers results in an error: *InvalidReplicationFactorException*.
 
-=== Get topics
+==== Get topics
 
 [source,shell]
 ----
@@ -588,7 +590,7 @@ OR
 kafka-topics --list --bootstrap-server broker:9092
 ----
 
-=== Describe topic
+==== Describe topic
 
 [source,shell]
 ----
@@ -614,7 +616,7 @@ In-sync replicas show which brokers are current and not lagging behind the leade
 
 image::images/image-2024-04-25-14-22-35-020.png[width=500]
 
-=== Delete topic
+==== Delete topic
 
 [source,shell]
 ----
@@ -636,7 +638,9 @@ bin/kafka-topics.sh --alter --bootstrap-server localhost:9094 \
 
 IMPORTANT: You can only add partitions, not remove partitions
 
-=== Write to topic
+=== Producer
+
+==== Write to topic
 
 [source,shell]
 ----
@@ -644,7 +648,9 @@ bin/kafka-console-producer.sh --bootstrap-server localhost:9094 \
 --topic kinaction_helloworld
 ----
 
-=== Read from topic
+=== Consumer
+
+==== Read from topic
 
 [source,shell]
 ----
@@ -655,3 +661,4 @@ bin/kafka-console-consumer.sh --bootstrap-server localhost:9094 \
 If we eliminate the `--from-beginning` option when we restart command.
 We will see only messages that were produced since the consumer console was started show up.
 This is provided by `offset` property.
+
