@@ -26,6 +26,3 @@ link:./sources/Kafka_The_Definitive_Guide_2022.epub[Kafka_The_Definitive_Guide_2
 
 Бесплатный курс
 
-== https://www.udemy.com/course/apache-kafka/?couponCode=ST6MT42324[Онлайн курс udemy apache-kafka]
-
-Платный курс

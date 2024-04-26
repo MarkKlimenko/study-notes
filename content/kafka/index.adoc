@@ -9,6 +9,12 @@
 
 Publish-subscribe based durable messaging system.
 
+System components overview
+
+image::images/image-2024-04-26-03-13-30-979.png[width=500]
+
+Broker overview
+
 image::images/image-2024-04-25-13-34-42-642.png[width=500]
 
 === Main features
