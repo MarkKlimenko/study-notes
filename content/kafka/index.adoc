@@ -488,5 +488,19 @@ image::images/image-2024-04-25-16-02-36-522.png[width=500]
 
 === Apache Flume
 
+If you have ever heard the term Flafka, you have definitely used this Kafka and Flume integration.
+Flume can provide an easier path for getting data into a cluster and relies more on configuration than on custom code.
 
+image::images/image-2024-04-26-02-52-21-449.png[width=500]
 
+=== Admin tools
+
+==== kcat
+
+kcat (https://github.com/edenhill/kcat) is a handy tool to have on your workstation, especially when connecting remotely to your clusters.
+
+==== Confluent REST Proxy API
+
+This proxy is a separate application that would likely be hosted on its own server for production usage, and its functionality is similar to the kcat utility we just discussed.
+
+image::images/image-2024-04-26-03-01-30-496.png[width=500]

@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b0285e1a-39b8-4104-b526-987346d8b8b8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-25-17-59-28-130.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-26-02-52-21-449.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/kafka/images/image-2024-04-26-03-01-30-496.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/content/kafka/index.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/content/kafka/index.adoc" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -57,7 +58,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1714071733898</updated>
-      <workItem from="1714071735358" duration="18679000" />
+      <workItem from="1714071735358" duration="20351000" />
     </task>
     <task id="LOCAL-00001" summary="Add">
       <created>1714072173644</created>
@@ -101,7 +102,14 @@
       <option name="project" value="LOCAL" />
       <updated>1714083835981</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Add">
+      <created>1714104767613</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1714104767614</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
