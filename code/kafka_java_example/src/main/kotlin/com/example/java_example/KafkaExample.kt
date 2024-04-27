@@ -10,6 +10,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
+import org.apache.kafka.common.errors.WakeupException
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
@@ -91,13 +92,13 @@ class KafkaExample {
             // send data - asynchronous
             producer.send(producerRecord) { metadata: RecordMetadata, e: Exception? ->
                 if (e == null) {
-                    log.info(
+                    /*log.info(
                         "PRODUCER " +
                             "Key:${id.padEnd(4)} " +
                             "Partition: ${metadata.partition()} " +
                             "Offset: ${metadata.offset().toString().padEnd(5)} " +
                             "Timestamp: ${metadata.timestamp()}"
-                    )
+                    )*/
                 } else {
                     log.error("Error while producing", e);
                 }
@@ -152,21 +153,49 @@ class KafkaExample {
 
         val consumer = KafkaConsumer<String, String>(properties)
 
-        consumer.subscribe(listOf(topic))
+        // get a reference to the current thread
+        val mainThread = Thread.currentThread()
 
-        while (true) {
-            val records: ConsumerRecords<String, String> =
-                consumer.poll(5000.toDuration(MILLISECONDS).toJavaDuration())
-            for (record in records) {
-                log.info(
-                    "CONSUMER " +
-                        "Group Id:${groupId.padEnd(10)} " +
-                        "Consumer Id:${consumerId.toString().padEnd(10)} " +
-                        "Key:${record.key()?.padEnd(4)} " +
-                        "Partition: ${record.partition()} " +
-                        "Offset: ${record.offset().toString().padEnd(5)}"
-                )
+        // adding the shutdown hook
+        Runtime.getRuntime().addShutdownHook(object : Thread() {
+            override fun run() {
+                log.info("Detected a shutdown, let's exit by calling consumer.wakeup()...")
+                consumer.wakeup()
+
+                // join the main thread to allow the execution of the code in the main thread
+                try {
+                    mainThread.join()
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                }
             }
+        })
+
+        try {
+            consumer.subscribe(listOf(topic))
+
+            while (true) {
+                val records: ConsumerRecords<String, String> =
+                    consumer.poll(5000.toDuration(MILLISECONDS).toJavaDuration())
+                for (record in records) {
+                    log.info(
+                        "CONSUMER " +
+                            "Group Id:${groupId.padEnd(10)} " +
+                            "Consumer Id:${consumerId.toString().padEnd(10)} " +
+                            "Key:${record.key()?.padEnd(4)} " +
+                            "Partition: ${record.partition()} " +
+                            "Offset: ${record.offset().toString().padEnd(5)}"
+                    )
+                }
+            }
+        } catch (e: WakeupException) {
+            log.info("Wake up exception!")
+            // we ignore this as this is an expected exception when closing a consumer
+        } catch (e: Exception) {
+            log.error("Unexpected exception", e)
+        } finally {
+            consumer.close()
+            log.info("The consumer is now gracefully closed.")
         }
     }
 }
