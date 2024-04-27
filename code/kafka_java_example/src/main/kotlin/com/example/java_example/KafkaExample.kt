@@ -1,14 +1,25 @@
 package com.example.java_example
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.consumer.ConsumerRecords
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
+import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Properties
 import kotlin.random.Random
+import kotlin.time.DurationUnit.MILLISECONDS
+import kotlin.time.toDuration
+import kotlin.time.toJavaDuration
+
 
 /*
   kafka-topics --bootstrap-server broker:9092 \
@@ -86,7 +97,7 @@ class KafkaExample {
                             "Partition: ${metadata.partition()} " +
                             "Offset: ${metadata.offset().toString().padEnd(5)} " +
                             "Timestamp: ${metadata.timestamp()}"
-                    );
+                    )
                 } else {
                     log.error("Error while producing", e);
                 }
@@ -111,8 +122,51 @@ class KafkaExample {
         return KafkaProducer<String, String>(properties)
     }
 
-    fun startKafkaConsumer() {
-        log.info("Start kafka consumer")
+    suspend fun startKafkaConsumers() {
+        log.info("Start kafka consumers")
 
+        withContext(Dispatchers.Default) {
+            launch { startConsumerGroup("consumer-group-1", 3) }
+            launch { startConsumerGroup("consumer-group-2", 1) }
+        }
+    }
+
+    private suspend fun startConsumerGroup(groupId: String, consumersCount: Int) {
+        withContext(Dispatchers.Default) {
+            repeat(consumersCount) {
+                launch { startConsumer(groupId, it) }
+            }
+        }
+    }
+
+    private fun startConsumer(groupId: String, consumerId: Int) {
+        val bootstrapServers = "127.0.0.1:29092"
+        val topic = "demo_java"
+
+        val properties = Properties()
+        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
+        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
+        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
+        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId)
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+
+        val consumer = KafkaConsumer<String, String>(properties)
+
+        consumer.subscribe(listOf(topic))
+
+        while (true) {
+            val records: ConsumerRecords<String, String> =
+                consumer.poll(5000.toDuration(MILLISECONDS).toJavaDuration())
+            for (record in records) {
+                log.info(
+                    "CONSUMER " +
+                        "Group Id:${groupId.padEnd(10)} " +
+                        "Consumer Id:${consumerId.toString().padEnd(10)} " +
+                        "Key:${record.key()?.padEnd(4)} " +
+                        "Partition: ${record.partition()} " +
+                        "Offset: ${record.offset().toString().padEnd(5)}"
+                )
+            }
+        }
     }
 }
