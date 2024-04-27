@@ -148,6 +148,12 @@ Increase batch size to 32KB or 64KB can help increasing throughput A batch is al
 
 If the producer produces faster than the broker can take, the records will be buffered in memory
 
+*Sticky Partitioner*
+
+Since Kafka v2.4.0, the partitioner is a Sticky Partitioner, which means the producer that receives messages sent in time close to each other will try to fill a batch into ONE partition before switching to creating a batch for another partition.
+
+To observe the round-robin feature of Kafka, we can add a `Thread.sleep(1000)` in between each iteration of the loop, which will force the batch to be sent and a new batch to be created for a different partition.
+
 *buffer.memory=33554432(32MB)*
 If the buffer is full(all 32 MB), .send() method wil start to block
 
