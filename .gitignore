@@ -1,2 +1,4 @@
 /.idea/
 /study-notes.iml
+
+/code/**/.gradle/
