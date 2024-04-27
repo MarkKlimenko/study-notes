@@ -747,6 +747,55 @@ kafka-console-producer --bootstrap-server broker:9092 \
 --topic second_topic
 ----
 
+==== Management
+
+Ensure that the consumers are stopped
+
+IMPORTANT: You cannot reset a consumer group if consumers are active in it.
+
+[source,shell]
+----
+kafka-consumer-groups --bootstrap-server broker:9092 \
+--describe \
+--group my-first-application
+----
+
+Reset offset
+
+[source,shell]
+----
+kafka-consumer-groups --bootstrap-server broker:9092 \
+--group my-first-application \
+--reset-offsets --to-earliest --execute --topic second_topic
+----
+
+Shift offset
+
+[source,shell]
+----
+kafka-consumer-groups --bootstrap-server broker:9092 \
+--group my-first-application \
+--reset-offsets --shift-by -2 --execute --topic second_topic
+----
+
+=== Clients
+
+*Java*
+
+* *The official client library:* low-level client
+* *The official Kafka Streams client library:* to create your Kafka Streams application
+* *Kafka for Spring Boot:* applies Spring concepts to Kafka development
+* *Spring Cloud Stream:* bindings for Kafka Stream
+* *Akka Streams & Alpakka Kafka*
+
+*Golang*
+
+* *Confluent Kafka Go:* wrapper of librdkafka, currently no Schema Registry support
+* *Schema Registry Client for Go:* compatible with Confluent Kafka Go
+* *Segment's Kafka Go:* pure Go implementation of the Kafka Client, good support
+* *Franz Go:* Pure go implementation, supports most KIPs
+* others if you're curious: *Sarama, Goka*
+
 
 
 

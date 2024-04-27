@@ -25,3 +25,7 @@ link:./sources/Kafka_The_Definitive_Guide_2022.epub[Kafka_The_Definitive_Guide_2
 == Kafka streams in action
 TBD
 
+== Official documentation
+
+https://kafka.apache.org/documentation
+
