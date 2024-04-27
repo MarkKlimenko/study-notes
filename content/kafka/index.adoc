@@ -796,6 +796,10 @@ kafka-consumer-groups --bootstrap-server broker:9092 \
 * *Franz Go:* Pure go implementation, supports most KIPs
 * others if you're curious: *Sarama, Goka*
 
+== Examples
+
+link:../../code/kafka_java_example[Java example]
+
 
 
 
