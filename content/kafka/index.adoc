@@ -644,8 +644,49 @@ IMPORTANT: You can only add partitions, not remove partitions
 
 [source,shell]
 ----
-bin/kafka-console-producer.sh --bootstrap-server localhost:9094 \
---topic kinaction_helloworld
+kafka-console-producer --bootstrap-server broker:9092 \
+--topic first_topic
+----
+
+* **--compression-codec**
+To enable message compression, default gzip, possible values 'none', 'gzip', 'snappy', 'lz4', or 'zstd'
+* **--producer-property**
+To pass in any producer property, such as the `acks=all` setting
+* **--request-required-acks**
+An alternative to set the acks setting directly
+
+==== Write file to topic
+
+Create file with content
+
+[source,shell]
+----
+cat > topic-input.txt << EOF
+bla 1
+bla 2
+bla 3
+bla 4
+bla 5
+EOF
+----
+
+[source,shell]
+----
+kafka-console-producer --bootstrap-server broker:9092 \
+--topic first_topic < topic-input.txt
+----
+
+==== Produce messages with key
+
+[source,shell]
+----
+kafka-console-producer --bootstrap-server broker:9092 \
+--topic first_topic \
+--property parse.key=true \
+--property key.separator=:
+
+>example key:example value
+>name:Stephane
 ----
 
 === Consumer
@@ -654,11 +695,58 @@ bin/kafka-console-producer.sh --bootstrap-server localhost:9094 \
 
 [source,shell]
 ----
-bin/kafka-console-consumer.sh --bootstrap-server localhost:9094 \
---topic kinaction_helloworld --from-beginning
+kafka-console-consumer --bootstrap-server broker:9092 \
+--topic first_topic --from-beginning
 ----
 
 If we eliminate the `--from-beginning` option when we restart command.
 We will see only messages that were produced since the consumer console was started show up.
 This is provided by `offset` property.
+
+==== Read from topic with key
+
+[source,shell]
+----
+kafka-console-consumer --bootstrap-server broker:9092 \
+--topic first_topic \
+--formatter kafka.tools.DefaultMessageFormatter \
+--property print.timestamp=true \
+--property print.key=true \
+--property print.value=true \
+--from-beginning
+----
+
+=== Consumer in group
+
+==== Example
+
+Create topic
+
+[source,shell]
+----
+kafka-topics --create --bootstrap-server broker:9092 \
+--topic second_topic \
+--partitions 3 \
+--replication-factor 1
+----
+
+Launch three consumers in separate terminals
+
+[source,shell]
+----
+kafka-console-consumer --bootstrap-server broker:9092 \
+--topic second_topic \
+--group my-first-application
+----
+
+Write messages to the topic
+
+[source,shell]
+----
+kafka-console-producer --bootstrap-server broker:9092 \
+--topic second_topic
+----
+
+
+
 
