@@ -136,29 +136,52 @@ The producer may retry sending the message a few more times before giving up and
 Messages are written into Kafka in batches.
 A batch is just a collection of messages, all of which are being produced to the same topic and partition.
 
-*linger.ms* Number of milliseconds a producer is willing to wait before sending a batch out.
+** *linger.ms* Number of milliseconds a producer is willing to wait before sending a batch out.
 
-*linger.ms=5* we increase the chances of messages being sent together in a batch.
+** *linger.ms=5* we increase the chances of messages being sent together in a batch.
 At the expense of introducing a small delay, we can increase throughput, compression and efficiency for our producer
 
-*batch.size* Maximum number of bytes that will be included in a batch.
-The default is 16KB
+** *batch.size* Maximum number of bytes that will be included in a batch.
+The default is 16KB.
+Increase batch size to 32KB or 64KB can help increasing throughput A batch is allocated per partition, make sure don't set it to a number that's too high.
+If the producer produces faster than the broker can take, the records will be buffered in memory.
 
-Increase batch size to 32KB or 64KB can help increasing throughput A batch is allocated per partition, make sure don't set it to a number that's too high
-
-If the producer produces faster than the broker can take, the records will be buffered in memory
-
-*Sticky Partitioner*
-
+====
+*Sticky Batch for Partitioner.*
 Since Kafka v2.4.0, the partitioner is a Sticky Partitioner, which means the producer that receives messages sent in time close to each other will try to fill a batch into ONE partition before switching to creating a batch for another partition.
 
 To observe the round-robin feature of Kafka, we can add a `Thread.sleep(1000)` in between each iteration of the loop, which will force the batch to be sent and a new batch to be created for a different partition.
+====
 
-*buffer.memory=33554432(32MB)*
+** *buffer.memory=33554432(32MB)*
 If the buffer is full(all 32 MB), .send() method wil start to block
 
-**max.block.ms=60000 **
+** **max.block.ms=60000 **
 The time .send() method will block until throwing an exception
+
+==== Producer partitioners
+
+*default*
+
+If id is specified it is used to spread messages between partitions using hash of the key.
+
+*RoundRobinPartitioner*
+
+Used without key.
+To spread messages equally.
+
+*UniformStickyPartitioner*
+
+These provide random partition assignment and sticky random partition assignment even when messages have keys.
+These are useful when keys are important for the consuming application, but the workload may be skewed, so a single key may have a disproportionately large workload.
+Using the UniformStickyPartitioner will result in an even distribution of workload across all partitions.
+
+*CustomPartitioner*
+
+==== Produce message headers
+
+Provide headers for information that will be used before decoding message body.
+For example version, encoding type or message source.
 
 ==== Producer properties
 
@@ -267,14 +290,62 @@ If the split is not even, then the first consumers (using alphabetical order) ge
 Strategy is where the partitions are uniformly distributed down the row of consumers.
 
 * **sticky**
-???
-TODO
+The Sticky Assignor has two goals: the first is to have an assignment that is as balanced as possible, and the second is that in case of a rebalance, it will leave as many assignments as possible in place, minimizing the overhead associated with moving partition assignments from one consumer to another.
 
 * **cooperative-sticky**
-???
-TODO
+This assignment strategy is identical to that of the Sticky Assignor but supports cooperative rebalances in which consumers can continue consuming from the partitions that are not reassigned.
 
 image::images/image-2024-04-25-17-59-28-130.png[width=500]
+
+==== Consumer partition Rebalance
+
+** *Eager rebalances.*
+During an eager rebalance, all consumers stop consuming, give up their ownership of all partitions, rejoin the consumer group, and get a brand-new partition assignment.
+This is essentially a short window of unavailability of the entire consumer group.
+The length of the window depends on the size of the consumer group as well as on several configuration parameters.
+
+image::image-2024-04-28-12-25-44-449.png[width=500]
+
+** *Cooperative rebalances.*
+Cooperative rebalances _(also called incremental rebalances)_ typically involve reassigning only a small subset of the partitions from one consumer to another, and allowing consumers to continue processing records from all the partitions that are not reassigned.
+This is achieved by rebalancing in two or more phases.
+Initially, the consumer group leader informs all the consumers that they will lose ownership of a subset of their partitions, then the consumers stop consuming from these partitions and give up their ownership in them.
+In the second phase, the consumer group leader assigns these now orphaned partitions to their new owners.
+
+image::image-2024-04-28-12-26-12-105.png[width=500]
+
+Consumers maintain membership in a consumer group and ownership of the partitions assigned to them by sending heartbeats to a Kafka broker designated as the group coordinator (this broker can be different for different consumer groups).
+
+====
+*How Does the Process of Assigning Partitions to Consumers Work?*
+
+When a consumer wants to join a group, it sends a JoinGroup request to the group coordinator.
+The first consumer to join the group becomes the group leader.
+The leader receives a list of all consumers in the group from the group coordinator (this will include all consumers that sent a heartbeat recently and that are therefore considered alive) and is responsible for assigning a subset of partitions to each consumer.
+It uses an implementation of PartitionAssignor to decide which partitions should be handled by which consumer.
+
+Kafka has few built-in partition assignment policies, which we will discuss in more depth in the configuration section.
+After deciding on the partition assignment, the consumer group leader sends the list of assignments to the GroupCoordinator, which sends this information to all the consumers.
+Each consumer only sees its own assignment—the leader is the only client process that has the full list of consumers in the group and their assignments.
+This process repeats every time a rebalance happens.
+====
+
+=== Quotas and Throttling
+
+Kafka brokers have the ability to limit the rate at which messages are produced and consumed.
+This is done via the quota mechanism.
+Kafka has three quota types: produce, consume, and request.
+Produce and consume quotas limit the rate at which clients can send and receive data, measured in bytes per second.
+Request quotas limit the percentage of time the broker spends processing client requests.
+
+Quotas can be applied to all clients by setting default quotas, specific client-ids, specific users, or both.
+User-specific quotas are only meaningful in clusters where security is configured and clients authenticate.
+
+The default produce and consume quotas that are applied to all clients are part of the Kafka broker configuration file.
+For example, to limit each producer to send no more than 2 MBps on average, add the following configuration to the broker configuration file: quota.producer.default=2M.
+
+While not recommended, you can also configure specific quotas for certain clients that override the default quotas in the broker configuration file.
+To allow clientA to produce 4 MBps and clientB 10 MBps, you can use the following: quota.producer.override="clientA:4M,clientB:10M”
 
 === Partitions count
 
@@ -512,6 +583,8 @@ image::images/image-2024-04-26-02-52-21-449.png[width=500]
 
 === Admin tools
 
+==== Admin client
+
 ==== kcat
 
 kcat (https://github.com/edenhill/kcat) is a handy tool to have on your workstation, especially when connecting remotely to your clusters.
@@ -521,6 +594,8 @@ kcat (https://github.com/edenhill/kcat) is a handy tool to have on your workstat
 This proxy is a separate application that would likely be hosted on its own server for production usage, and its functionality is similar to the kcat utility we just discussed.
 
 image::images/image-2024-04-26-03-01-30-496.png[width=500]
+
+==== MirrorMaker
 
 == Usage
 

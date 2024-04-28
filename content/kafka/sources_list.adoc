@@ -18,7 +18,7 @@ Free course. Short and best for first steps
 
 link:./sources/Kafka_in_Action_2022.pdf[Kafka_in_Action_2022.pdf]
 
-== Kafka the definitive guide
+== Kafka: The Definitive Guide, 2nd Edition Gwen Shapira
 
 link:./sources/Kafka_The_Definitive_Guide_2022.epub[Kafka_The_Definitive_Guide_2022.epub]
 
