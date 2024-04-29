@@ -304,7 +304,7 @@ During an eager rebalance, all consumers stop consuming, give up their ownership
 This is essentially a short window of unavailability of the entire consumer group.
 The length of the window depends on the size of the consumer group as well as on several configuration parameters.
 
-image::image-2024-04-28-12-25-44-449.png[width=500]
+image::images/image-2024-04-28-12-25-44-449.png[width=500]
 
 ** *Cooperative rebalances.*
 Cooperative rebalances _(also called incremental rebalances)_ typically involve reassigning only a small subset of the partitions from one consumer to another, and allowing consumers to continue processing records from all the partitions that are not reassigned.
@@ -312,7 +312,7 @@ This is achieved by rebalancing in two or more phases.
 Initially, the consumer group leader informs all the consumers that they will lose ownership of a subset of their partitions, then the consumers stop consuming from these partitions and give up their ownership in them.
 In the second phase, the consumer group leader assigns these now orphaned partitions to their new owners.
 
-image::image-2024-04-28-12-26-12-105.png[width=500]
+image::images/image-2024-04-28-12-26-12-105.png[width=500]
 
 Consumers maintain membership in a consumer group and ownership of the partitions assigned to them by sending heartbeats to a Kafka broker designated as the group coordinator (this broker can be different for different consumer groups).
 
