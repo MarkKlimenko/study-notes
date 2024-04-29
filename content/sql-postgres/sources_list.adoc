@@ -5,8 +5,11 @@
 :icons: font
 :source-highlighter: coderay
 
-== TODO
+== PostgreSQL Up and Running 3rd
 
-link:./sources/TODO.pdf[TODO.pdf]
+link:./sources/PostgreSQL_Up_and_Running_3rd_2018.pdf[PostgreSQL_Up_and_Running_3rd_2018.pdf]
 
+== Learn PostgreSQL, Pirozzi Enrico, Ferrari Luca, 2nd Edition (Expert insight) - 2023
+
+link:./sources/Learn_PostgreSQL_2nd_2023.pdf[Learn_PostgreSQL_2nd_2023.pdf]
 

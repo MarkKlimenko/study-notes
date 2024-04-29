@@ -881,6 +881,10 @@ kafka-consumer-groups --bootstrap-server broker:9092 \
 
 link:../../code/kafka_java_example[Java example]
 
+== TODO List
+
+* Kafka stream by Streams in action
+* Spring example (Simple and Cloud Stream)
 
 
 

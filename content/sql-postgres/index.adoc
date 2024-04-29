@@ -7,11 +7,465 @@
 
 == Introduction
 
-DDL
-DML
-TCL
+DDL - TODO!!!
 
+DML - TODO!!!
 
+TCL - TODO!!!
 
+== Database Objects
 
+** *Databases*
+** *Schemas*
+** *Tables*
+** *Views*
+** *Extension*
+Extensions allow developers to package functions, data types, casts, custom index types, tables, attribute variables, etc., for installation or removal as a unit.
+** *Functions.*
+You can program your own custom functions to handle data manipulation, perform complex calculations, or wrap similar functionality.
+** *Languages.*
+Create functions using a PL.
+PostgreSQL installs three by default: SQL, PL/pgSQL, and C.
+** *Operators.*
+Operators are nothing more than symbolically named aliases such as = or && for functions.
+In PostgreSQL, you can invent your own.
+This is often the case when you create custom data types.
+** *Foreign tables and foreign data wrappers.*
+Foreign tables are virtual tables linked to data outside a PostgreSQL database.
+Once you’ve configured the link, you can query them like any other tables.
+Foreign tables can link to CSV files, a PostgreSQL table on another server, a table in a different product such as SQL Server or Oracle, a NoSQL database such as Redis, or even a web service such as Twitter or Salesforce.
+** *Catalogs.*
+Catalogs are system schemas that store PostgreSQL builtin functions and metadata.
+Every database contains two catalogs: pg_catalog, which holds all functions, tables, system views, casts, and types packaged with PostgreSQL; and information_schema, which offers views exposing metadata in a format dictated by the ANSI SQL standard.
+** *Types.*
+Type is short for data type.
+** *Full text search.*
+** *Casts.*
+Casts prescribe how to convert from one data type to another.
+They are backed by functions that actually perform the conversion.
+In PostgreSQL, you can create your own casts and override or enhance the default casting behavior.
+** *Sequences.*
+A sequence controls the autoincrementation of a serial data type.
+PostgresSQL automatically creates sequences when you define a serial column, but you can easily change the initial value, step, and next available value.
+** *Rules.*
+Rules are instructions to rewrite an SQL prior to execution.
+Triggers can accomplish the same things.
 
+== Database administration
+
+=== Configuration Files
+
+Three main configuration files control operations of a PostgreSQL server:
+
+** *postgresql.conf* Controls general settings, such as memory allocation, default storage location for new databases, the IP addresses that PostgreSQL listens on, location of logs, and plenty more.
+** *pg_hba.conf* Controls access to the server, dictating which users can log in to which databases, which IP addresses can connect, and which authentication scheme to accept.
+** *pg_ident.conf* If present, this file maps an authenticated OS login to a PostgreSQL user.
+People sometimes map the OS root account to the PostgresSQL superuser account, postgres.
+
+==== Checking postgresql.conf settings
+
+Using full query
+
+[source,sql]
+----
+SELECT
+    name,
+    context ,
+    unit ,
+    setting, boot_val, reset_val
+FROM pg_settings
+WHERE name IN ('listen_addresses','deadlock_timeout','shared_buffers',
+    'effective_cache_size','work_mem','maintenance_work_mem')
+ORDER BY context, name;
+----
+
+----
+name | context | unit | setting | boot_val | reset_val
+---------------------+------------+------+-------- +-----------+----------
+listen_addresses | postmaster | | * | localhost | *
+shared_buffers | postmaster | 8kB | 131584 | 1024 | 131584
+deadlock_timeout | superuser | ms | 1000 | 1000 | 1000
+effective_cache_size | user | 8kB | 16384 | 16384 | 16384
+maintenance_work_mem | user | kB | 16384 | 16384 | 16384
+work_mem | user | kB | 5120 | 1024 | 5120
+----
+
+Or short query
+
+[source,sql]
+----
+SHOW shared_buffers;
+SHOW deadlock_timeout;
+----
+
+==== Changing the postgresql.conf settings
+
+PostgreSQL 9.4 introduced the ability to change settings using the ALTER SYSTEM SQL command.
+For example, to set the work_mem globally, enter the following:
+
+[source,sql]
+----
+ALTER SYSTEM SET work_mem = '500MB';
+----
+
+This command is wise enough to not directly edit postgres.conf but will make the change in postgres.auto.conf.
+Depending on the particular setting changed, you may need to restart the service.
+If you just need to reload it, here’s a convenient command:
+
+[source,sql]
+----
+SELECT pg_reload_conf();
+----
+
+[IMPORTANT]
+.I edited my postgresql.conf and now my server won’t start
+====
+The easiest way to figure out what you screwed up is to look at the logfile, located at the root of the data folder, or in the pg_log subfolder.
+Open the latest file and read what the last line says.
+The error raised is usually self-explanatory.
+====
+
+=== Managing Connections
+
+==== Cancelling the query
+
+[source,sql]
+----
+-- this query returns pid
+SELECT pid, usename FROM pg_stat_activity;
+SELECT pg_cancel_backend(1234);
+SELECT pg_terminate_backend(1234);
+
+-- or terminate in a query
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity
+WHERE usename = 'postgres_tutorial';
+----
+
+==== Check for Queries Being Blocked
+
+Use pg_stat_activity view.
+Prior to PostgreSQL 9.6, use waiting = true to determine what queries are being blocked.
+In PostgreSQL 9.6 or higher, use wait_event IS NOT NULL.
+
+[source,sql]
+----
+SELECT pid, usename, wait_event, wait_event_type FROM pg_stat_activity
+WHERE wait_event IS NOT NULL;
+----
+
+=== Roles
+
+PostgreSQL handles credentialing using roles.
+Roles that can log in are called login roles.
+Roles can also be members of other roles; the roles that contain other roles are called group roles.
+(And yes, group roles can be members of other group roles and so on, but don’t go there unless you have a knack for hierarchical thinking.) Group roles that can log in are called group login roles.
+However, for security, group roles generally cannot log in.
+A role can be designated as a superuser.
+
+IMPORTANT: Recent versions of PostgreSQL no longer use the terms users and groups.
+You will still run into these terms; just know that they mean login roles and group roles, respectively.
+For backward compatibility, CREATE USER and CREATE GROUP still work in current versions, but shun them and use CREATE ROLE instead.
+
+==== Creating Login Roles
+
+[source,sql]
+----
+CREATE ROLE leo LOGIN PASSWORD 'king' VALID UNTIL 'infinity' CREATEDB;
+----
+
+Specifying VALID UNTIL is optional.
+If omitted, the role remains active indefinitely.
+CREATEDB grants database creation privilege to the new role.
+
+==== Creating Superuser Roles
+
+[source,sql]
+----
+CREATE ROLE regina LOGIN PASSWORD 'queen' VALID UNTIL '2025-1-1 00:00' SUPERUSER;
+----
+
+==== Creating Group Roles
+
+[source,sql]
+----
+CREATE ROLE royalty INHERIT;
+
+GRANT royalty TO leo;
+GRANT royalty TO regina;
+----
+
+Note the use of the modifier INHERIT.
+This means that any member of royalty will automatically inherit privileges of the royalty role, except for the superuser privilege.
+For security, PostgreSQL never passes down the superuser privilege.
+INHERIT is the default, but we recommend that you always include the modifier for clarity.
+
+=== Database Creation
+
+[IMPORTANT]
+.Template database
+====
+A template database is, as the name suggests, a database that serves as a skeleton for new databases.
+When you create a new database, PostgreSQL copies all the database settings and data from the template database to the new database.
+The default PostgreSQL installation comes with two template databases: `template0 and template1`.
+If you don’t specify a template database to follow when you create a database, `template1` is used.
+====
+
+[source,sql]
+----
+CREATE DATABASE mydb;
+
+-- or with link to the role
+CREATE DATABASE mydb WITH owner = mydb_admin;
+
+-- or from custom template
+CREATE DATABASE my_db TEMPLATE my_template_db;
+----
+
+==== Using Schemas
+
+[source,sql]
+----
+CREATE SCHEMA customer1;
+
+CREATE SCHEMA customer1 authorization customer1;
+----
+
+IMPORTANT: Role uses SCHEMA with the same name by default.
+If such schema not found it uses public schema.
+`search_path = "$user", public;`
+
+=== Privileges
+
+PostgreSQL has a few dozen privileges, some of which you may never need to worry about.
+The more mundane privileges are SELECT, INSERT, UPDATE, ALTER, EXECUTE, DELETE, and TRUNCATE.
+
+Most privileges must have a context.
+For example, a role having an ALTER privilege is meaningless unless qualified with a database object such as ALTER privilege on tables1, SELECT privilege on table2, EXECUTE privilege on function1, and so on.
+Not all privileges apply to all objects: an EXECUTE privilege for a table is nonsense.
+
+Some privileges make sense without a context.
+CREATEDB and CREATE ROLE are two privileges where context is irrelevant.
+
+==== GRANT
+
+[source,sql]
+----
+-- template for GRANT
+GRANT some_privilege TO some_role;
+
+-- grant specific privileges on ALL objects of a specific type use ALL instead of the specific object name
+GRANT SELECT, REFERENCES, TRIGGER ON ALL TABLES IN SCHEMA my_schema TO PUBLIC;
+
+-- granting privileges, you can add WITH GRANT OPTION. This means that the grantee can grant her own privileges to others
+GRANT ALL ON ALL TABLES IN SCHEMA public TO mydb_admin WITH GRANT OPTION;
+---
+----
+
+=== Backup and Restore
+
+PostgreSQL ships with three utilities for backup: pg_dump, pg_dumpall, and pg_basebackup.
+You’ll find all of them in the PostgreSQL bin folder.
+
+Use pg_dump to back up specific databases.
+To back up all databases in plain text along with server globals, use pg_dumpall, which needs to run under a superuser account so that it back up all databases.
+Use pg_basebackup to do system-level disk backup of all databases.
+
+pg_basebackup is the most efficient way of doing a full postgresql server cluster backup.
+If you have a reasonably sized database, as in 500 GB or more, you should be using pg_basebackup as part of your backup strategy.
+
+=== Tablespaces
+
+PostgreSQL uses tablespaces to ascribe logical names to physical locations on disk.
+Initializing a PostgreSQL cluster automatically begets two tablespaces: pg_default, which stores all user data, and pg_global, which stores all system data.
+These are located in the same folder as your default data cluster.
+You’re free to create tablespaces at will and house them on any serverdisks.
+You can explicitly assign default tablespaces for new objects by database.
+You can also move existing database objects to new ones.
+
+[source,sql]
+----
+CREATE TABLESPACE secondary LOCATION '/usr/data/pgdata94_secondary';
+
+-- use
+ALTER DATABASE mydb SET TABLESPACE secondary;
+ALTER TABLE mytable SET TABLESPACE secondary;
+
+-- move
+ALTER TABLESPACE pg_default MOVE ALL TO secondary;
+----
+
+== Data Types
+
+PostgreSQL supports the workhorse data types of any database: numerics, strings, dates, times, and booleans.
+But PostgreSQL sprints ahead by adding support for arrays, time zone−aware datetimes, time intervals, ranges, JSON, XML, and many more.
+If that’s not enough, you can invent custom types.
+
+TODO: Find explicit source
+
+=== JSON
+
+[source,sql]
+----
+CREATE TABLE persons (id serial PRIMARY KEY, person json);
+
+INSERT INTO persons (person)
+VALUES (
+'{
+  "name": "Sonia",
+  "spouse": {
+    "name": "Alex",
+    "parents": {
+      "father": "Rafael",
+      "mother": "Ofelia"
+    },
+    "phones": [
+      {
+        "type": "work",
+        "number": "619-722-6719"
+      },
+      {
+        "type": "cell",
+        "number": "619-852-5083"
+      }
+    ]
+  },
+  "children": [
+    {
+      "name": "Brandon",
+      "gender": "M"
+    },
+    {
+      "name": "Azaleah",
+      "girl": true,
+      "phones": []
+    }
+  ]
+}'
+);
+
+-- select
+SELECT person->'name' FROM persons;
+SELECT person->'spouse'->'parents'->'father' FROM persons;
+SELECT person->'children'->0->'name' FROM persons;
+
+-- or select path array
+SELECT person#>array['spouse','parents','father'] FROM persons;
+
+-- or return text representation
+SELECT person->'spouse'->'parents'->>'father' FROM persons;
+SELECT person#>>array['children','0','name'] FROM persons;
+----
+
+=== Full Text Search (FTS)
+
+At the core of FTS is an FTS configuration.
+The configuration codifies the rules under which match will occur by referring to one or more dictionaries.
+For instance, if your dictionary contains entries that equate the words love, romance, infatuation, lust, then any search by one of the words will find matches with any of the words.
+
+[source,sql]
+----
+SELECT cfgname FROM pg_ts_config;
+
+cfgname
+----------
+simple
+danish
+dutch
+english
+finnish
+french
+german
+hungarian
+italian
+norwegian
+portuguese
+romanian
+russian
+spanish
+swedish
+turkish
+(16 rows)
+----
+
+Create gin index.
+It is required for FTS
+
+[source,sql]
+----
+CREATE INDEX ix_film_fts_gin ON film USING gin (fts);
+----
+
+==== Advanced concepts
+
+* TSVectors
+* TSQueries
+* Ranking Results
+* Full Text Stripping
+
+=== Custom and Composite Data Types
+
+[source,sql]
+----
+CREATE TYPE complex_number AS (r double precision, i double precision);
+CREATE TABLE circuits (circuit_id serial PRIMARY KEY, ac_volt complex_number);
+
+-- use one of this options
+SELECT circuit_id, (ac_volt).* FROM circuits;
+SELECT circuit_id, (ac_volt).r, (ac_volt).i FROM circuits;
+----
+
+== Tables, Constraints, and Indexes
+
+== Usage examples
+
+=== Start database in Docker
+
+[source,shell]
+----
+docker run --name sql-postgres-tutorial -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres:15.2
+
+docker start sql-postgres-tutorial
+docker stop sql-postgres-tutorial
+docker rm sql-postgres-tutorial
+----
+
+=== Get user
+
+[source,sql]
+----
+SELECT session_user, current_user;
+----
+
+=== Pretty print (Expanded display)
+
+[source,sql]
+----
+\x on
+----
+
+=== Connect to psql
+
+[source,shell]
+----
+docker exec -it sql-postgres-tutorial bash
+psql -U postgres
+----
+
+=== Get start commands
+
+[source,sql]
+----
+CREATE DATABASE postgres_tutorial;
+\c postgres_tutorial
+CREATE ROLE postgres_tutorial WITH LOGIN PASSWORD 'password';
+CREATE SCHEMA postgres_tutorial authorization postgres_tutorial;
+
+-- Do in another terminal or in another connection
+-- psql -U postgres_tutorial postgres_tutorial
+create table example(id integer);
+\dt
+----
+
+== TODO List
+
+* HAVING
