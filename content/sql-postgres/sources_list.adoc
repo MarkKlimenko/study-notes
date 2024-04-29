@@ -5,6 +5,14 @@
 :icons: font
 :source-highlighter: coderay
 
+== Learning SQL
+
+link:./sources/Learning_SQL_BeaulieuA_3rd_edition_2020.pdf[Learning_SQL_BeaulieuA_3rd_edition_2020.pdf]
+
+== SQL Cookbook
+
+link:./sources/SQL_Cookbook_MolinaroA_2nd_edition_2020.pdf[SQL_Cookbook_MolinaroA_2nd_edition_2020.pdf]
+
 == PostgreSQL Up and Running 3rd
 
 link:./sources/PostgreSQL_Up_and_Running_3rd_2018.pdf[PostgreSQL_Up_and_Running_3rd_2018.pdf]
