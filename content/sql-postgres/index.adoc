@@ -7,11 +7,11 @@
 
 == Introduction
 
-DDL - TODO!!!
+*DDL* - SQL schema statements, which are used to define the data structures stored in the database
 
-DML - TODO!!!
+*DML* - SQL data statements, which are used to manipulate the data structures previously defined using SQL schema statements
 
-TCL - TODO!!!
+*TCL* - SQL transaction statements, which are used to begin, end, and roll back transactions
 
 == Database Objects
 
@@ -296,11 +296,110 @@ ALTER TABLESPACE pg_default MOVE ALL TO secondary;
 
 == Data Types
 
+https://www.postgresql.org/docs/current/datatype.html
+
 PostgreSQL supports the workhorse data types of any database: numerics, strings, dates, times, and booleans.
 But PostgreSQL sprints ahead by adding support for arrays, time zone−aware datetimes, time intervals, ranges, JSON, XML, and many more.
 If that’s not enough, you can invent custom types.
 
-TODO: Find explicit source
+=== Character Types
+
+image::images/image-2024-04-29-19-59-49-423.png[width=500]
+
+The n is a positive integer.
+An attempt to store a longer string into a column of these types will result in an error.
+If the string to be stored is shorter than the declared length, values of type character will be space-padded; values of type character varying will simply store the shorter string.
+
+IMPORTANT: If specified, the length n must be between zero and 10,485,760.
+If varchar is used without length specifier, the type accepts strings of any length.
+If bpchar lacks a length specifier, it also accepts strings of any length, but trailing spaces are semantically insignificant.
+If char lacks a specifier, it is equivalent to character(1).
+
+=== Numeric Types
+
+image::images/image-2024-04-29-19-58-53-876.png[width=500]
+
+==== Integer types
+
+The type `integer` is the common choice, as it offers the best balance between range, storage size, and performance.
+The `smallint` type is generally only used if disk space is at a premium.
+The `bigint` type is designed to be used when the range of the `integer` type is insufficient.
+
+==== Arbitrary Precision Numbers
+
+----
+NUMERIC(precision, scale)
+NUMERIC(precision) - selects a scale of 0
+NUMERIC - without any precision or scale creates an “unconstrained numeric” column in which numeric values of any length can be stored, up to the implementation limits
+----
+
+The type numeric can store numbers with a very large number of digits.
+It is especially recommended for storing monetary amounts and other quantities where exactness is required.
+Calculations with numeric values yield exact results where possible, e.g., addition, subtraction, multiplication.
+However, calculations on numeric values are very slow compared to the integer types, or to the floating-point types described in the next section.
+
+=== Binary Data Types
+
+The bytea data type allows storage of binary strings
+
+image::images/image-2024-04-29-23-33-53-770.png[width=500]
+
+A binary string is a sequence of octets (or bytes).
+Binary strings are distinguished from character strings in two ways.
+First, binary strings specifically allow storing octets of value zero and other “non-printable” octets (usually, octets outside the decimal range 32 to 126).
+
+=== Date/Time Types
+
+image::images/image-2024-04-29-23-38-11-595.png[width=500]
+
+time, timestamp, and interval accept an optional precision value p which specifies the number of fractional digits retained in the seconds field.
+By default, there is no explicit bound on precision.
+The allowed range of p is from 0 to 6.
+
+`https://www.postgresql.org/docs/current/datatype-datetime.html`
+
+=== Boolean Type
+
+PostgreSQL provides the standard SQL type boolean; see Table 8.19. The boolean type can have several states: “true”, “false”, and a third state, “unknown”, which is represented by the SQL null value.
+
+Boolean constants can be represented in SQL queries by the SQL key words TRUE, FALSE, and NULL.
+
+The datatype input function for type boolean accepts these string representations for the “true” state:
+
+* true
+* yes
+* on
+* 1
+
+and these representations for the “false” state:
+
+* false
+* no
+* off
+* 0
+
+=== Enumerated Types
+
+Enumerated (enum) types are data types that comprise a static, ordered set of values.
+They are equivalent to the enum types supported in a number of programming languages.
+An example of an enum type might be the days of the week, or a set of status values for a piece of data.
+
+[source,sql]
+----
+CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');
+CREATE TABLE person (
+    name text,
+    current_mood mood
+);
+INSERT INTO person VALUES ('Moe', 'happy');
+SELECT * FROM person WHERE current_mood = 'happy';
+
+-- result
+ name | current_mood
+------+--------------
+ Moe  | happy
+(1 row)
+----
 
 === JSON
 
@@ -628,6 +727,62 @@ You need to resort to mechanisms such as crontab, pgAgent jobs, or triggers to a
 
 == Select
 
+image::images/image-2024-04-30-00-18-47-223.png[width=500]
+
+=== Filtering
+
+[source,sql]
+----
+-- two conditions with AND
+WHERE first_name = 'STEVEN' AND create_date > '2006-01-01'
+
+-- any of two
+WHERE first_name = 'STEVEN' OR create_date > '2006-01-01'
+
+-- using parentheses (parentheses haas higher priority)
+WHERE (first_name = 'STEVEN' OR last_name = 'YOUNG')
+AND create_date > '2006-01-01'
+
+-- not Operator
+WHERE NOT (first_name = 'STEVEN' AND last_name = 'YOUNG')
+AND create_date > '2006-01-01'
+
+-- better not approach
+WHERE (first_name <> 'STEVEN' OR last_name <> 'YOUNG')
+AND create_date > '2006-01-01'
+----
+
+// TODO: find English version
+image::images/image-2024-04-30-14-23-04-762.png[width=500]
+
+==== Condition Types
+
+* *Equality Conditions* =
+* *Inequality conditions* <>
+* *Range Conditions* WHERE rental_date <= '2005-06-16'AND rental_date >= '2005-06-14'
+* *The between operator* WHERE rental_date BETWEEN '2005-06-14' AND '2005-06-16'
+* *Membership Conditions* WHERE rating IN ('G','PG')
+* *Using subqueries* WHERE rating IN (SELECT rating FROM film WHERE title LIKE '%PET%')
+* *Using not in* WHERE rating NOT IN ('PG-13','R', 'NC-17')
+
+==== Matching Conditions
+
+Using wildcards `WHERE last_name LIKE '_A_T%S';`
+
+* _ Exactly one character
+* % Any number of characters (including 0)
+
+Using regular expressions `WHERE last_name REGEXP '^[QY]';`
+
+==== NULL
+
+[source,sql]
+----
+WHERE return_date IS NULL;
+
+WHERE return_date IS NOT NULL;
+----
+
 === Window Functions
 
 TODO:
@@ -831,7 +986,7 @@ INSERT INTO logs_2011_01_02 SELECT * FROM t;
 
 === Joins
 
-TODO:
+// TODO: implement
 
 ==== Lateral Joins
 
@@ -997,7 +1152,3 @@ CREATE SCHEMA postgres_tutorial authorization postgres_tutorial;
 create table example(id integer);
 \dt
 ----
-
-== TODO List
-
-* HAVING
