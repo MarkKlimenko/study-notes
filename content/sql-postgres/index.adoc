@@ -758,7 +758,7 @@ image::images/image-2024-04-30-14-23-04-762.png[width=500]
 ==== Condition Types
 
 * *Equality Conditions* =
-* *Inequality conditions* <>
+* *Inequality conditions* <> OR !=
 * *Range Conditions* WHERE rental_date <= '2005-06-16'AND rental_date >= '2005-06-14'
 * *The between operator* WHERE rental_date BETWEEN '2005-06-14' AND '2005-06-16'
 * *Membership Conditions* WHERE rating IN ('G','PG')
