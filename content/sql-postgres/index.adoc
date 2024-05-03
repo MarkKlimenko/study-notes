@@ -986,7 +986,44 @@ INSERT INTO logs_2011_01_02 SELECT * FROM t;
 
 === Joins
 
-// TODO: implement
+==== Cartesian Product (Cross Join)
+
+Cartesian product, which is every permutation of the two tables (599 customers x 603 addresses = 361,197 permutations).
+This type of join is known as a cross join, and it is rarely used (on purpose, at least)
+
+[source,sql]
+----
+SELECT c.first_name, c.last_name, a.address
+    FROM customer c CROSS JOIN address a;
+----
+
+==== Inner Join
+
+[source,sql]
+----
+SELECT c.first_name, c.last_name, a.address
+ FROM customer c JOIN address a
+ ON c.address_id = a.address_id;
+
+-- OR
+SELECT c.first_name, c.last_name, a.address
+ FROM customer c INNER JOIN address a
+ ON c.address_id = a.address_id;
+
+-- OR if the property name is the same
+SELECT c.first_name, c.last_name, a.address
+ FROM customer c INNER JOIN address a
+ USING (address_id);
+----
+
+==== Left Join
+// TODO:
+
+==== Right Join
+// TODO:
+
+==== Outer Join
+// TODO:
 
 ==== Lateral Joins
 
