@@ -1276,6 +1276,57 @@ GREATEST(value [, ...])
 LEAST(value [, ...])
 ----
 
+== Transactions
+
+[source,sql]
+----
+BEGIN;
+UPDATE accounts SET balance = balance - 100.00
+    WHERE name = 'Alice';
+-- etc etc
+COMMIT;
+----
+
+We can issue the command ROLLBACK instead of COMMIT, and all our updates so far will be canceled.
+
+IMPORTANT: PostgreSQL actually treats every SQL statement as being executed within a transaction.
+If you do not issue a BEGIN command, then each individual statement has an implicit BEGIN and (if successful) COMMIT wrapped around it.
+
+It's possible to control the statements in a transaction in a more granular fashion through the use of savepoints.
+Savepoints allow you to selectively discard parts of the transaction, while committing the rest.
+After defining a savepoint with SAVEPOINT, you can if needed roll back to the savepoint with ROLLBACK TO.
+All the transaction's database changes between defining the savepoint and rolling back to it are discarded, but changes earlier than the savepoint are kept.
+
+[source,sql]
+----
+BEGIN;
+UPDATE accounts SET balance = balance - 100.00
+    WHERE name = 'Alice';
+SAVEPOINT my_savepoint;
+UPDATE accounts SET balance = balance + 100.00
+    WHERE name = 'Bob';
+-- oops ... forget that and use Wally's account
+ROLLBACK TO my_savepoint;
+UPDATE accounts SET balance = balance + 100.00
+    WHERE name = 'Wally';
+COMMIT;
+----
+
+=== Transaction Isolation
+
+image::images/image-2024-05-04-16-24-26-490.png[width=500]
+
+IMPORTANT: Read Committed is the default isolation level in PostgreSQL
+
+==== FOR UPDATE
+
+FOR UPDATE causes the rows retrieved by the SELECT statement to be locked as though for update.
+This prevents them from being locked, modified or deleted by other transactions until the current transaction ends.
+
+==== Deadlocks
+
+https://www.postgresql.org/docs/current/explicit-locking.html
+
 == Query Performance Tuning
 
 === EXPLAIN
