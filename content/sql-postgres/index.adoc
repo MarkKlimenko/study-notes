@@ -1216,6 +1216,66 @@ FROM customer c
 WHERE c.first_name LIKE 'J%' AND c.last_name LIKE 'D%';
 ----
 
+=== Conditional Logic
+
+==== CASE
+
+[source,sql]
+----
+CASE expression
+    WHEN value THEN result
+    [WHEN ...]
+    [ELSE result]
+END
+
+-- example
+SELECT first_name, last_name,
+ CASE
+  WHEN active = 1 THEN 'ACTIVE'
+  ELSE 'INACTIVE'
+ END activity_type
+ FROM customer;
+----
+
+==== COALESCE
+
+The COALESCE function returns the first of its arguments that is not null.
+Null is returned only if all arguments are null.
+It is often used to substitute a default value for null values when data is retrieved for display, for example:
+
+[source,sql]
+----
+COALESCE(value [, ...])
+
+-- example
+SELECT COALESCE(description, short_description, '(none)') ...
+----
+
+==== NULLIF
+
+The NULLIF function returns a null value if value1 equals value2; otherwise it returns value1.
+
+[source,sql]
+----
+NULLIF(value1, value2)
+
+-- example
+SELECT NULLIF(value, '(none)') ...
+----
+
+In this example, if value is (none), null is returned, otherwise the value of value is returned.
+
+==== GREATEST and LEAST
+
+The GREATEST and LEAST functions select the largest or smallest value from a list of any number of expressions.
+
+[source,sql]
+----
+GREATEST(value [, ...])
+
+LEAST(value [, ...])
+----
+
 == Query Performance Tuning
 
 === EXPLAIN
