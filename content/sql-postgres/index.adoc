@@ -830,7 +830,9 @@ Returns the average value across a set
 * **sum()**
 Returns the sum of the values across a set
 * **count()**
-Returns the number of values in a set
+Returns the number of values in a set.
+Can be used without aggregation.
+Has options `COUNT(DISTINCT city)`
 
 ==== Using Expressions
 
@@ -860,6 +862,28 @@ image::images/image-2024-05-03-19-44-07-885.png[width=500]
 === Window Functions
 
 // TODO:
+
+=== Subqueries
+
+A subquery is a query contained within another SQL statement (which I refer to as the containing statement for the rest of this discussion).
+A subquery is always enclosed within parentheses, and it is usually executed prior to the containing statement.
+Like any query, a subquery returns a result set that may consist of:
+
+* A single row with a single column
+* Multiple rows with a single column
+* Multiple rows having multiple columns
+
+[source,sql]
+----
+-- get last customer
+SELECT customer_id, first_name, last_name
+    FROM customer
+    WHERE customer_id = (SELECT MAX(customer_id) FROM customer);
+----
+
+==== Subquery Expressions
+
+https://www.postgresql.org/docs/current/functions-subquery.html
 
 === Handy Constructions
 
