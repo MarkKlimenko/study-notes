@@ -252,7 +252,7 @@ Needed for deserialization of the key
 A name that’s used to join a consumer group
 
 * **client.id**
-An ID to identify a user (we will use this in chapter 10)
+An ID to identify a user
 
 * **heartbeat.interval.ms**
 Interval for consumer’s pings to the group coordinator

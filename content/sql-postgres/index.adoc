@@ -785,7 +785,77 @@ WHERE return_date IS NOT NULL;
 
 === Group by
 
-// TODO:
+[source,sql]
+----
+SELECT customer_id, count(*)
+ FROM rental
+ GROUP BY customer_id
+ HAVING count(*) >= 40
+ ORDER BY 2 DESC;
+----
+
+IMPORTANT: the group by clause runs after the where clause has been evaluated, you cannot add filter conditions to your where clause for this purpose.
+Use HAVING closure.
+
+Multicolumn Grouping
+
+[source,sql]
+----
+SELECT fa.actor_id, f.rating, count(*)
+  FROM film_actor fa
+  INNER JOIN film f
+  ON fa.film_id = f.film_id
+  GROUP BY fa.actor_id, f.rating
+  ORDER BY 1,2;
+----
+
+Grouping via Expressions
+
+[source,sql]
+----
+SELECT extract(YEAR FROM rental_date) year,
+  COUNT(*) how_many
+  FROM rental
+  GROUP BY extract(YEAR FROM rental_date);
+----
+
+==== Aggregate Functions
+
+* **max()**
+Returns the maximum value within a set
+* **min()**
+Returns the minimum value within a set
+* **avg()**
+Returns the average value across a set
+* **sum()**
+Returns the sum of the values across a set
+* **count()**
+Returns the number of values in a set
+
+==== Using Expressions
+
+====
+*COUNT(DISTINCT customer_id)* - counts only the number of unique values
+
+**MAX(datediff(return_date,rental_date))** - datediff function is used to compute the number of days between the return date and the rental date for every rental, and the max function returns the highest value
+====
+
+==== ROLLUP
+
+The ROLLUP is an extension of the GROUP BY clause.
+The ROLLUP option allows you to include extra rows that represent the subtotals, which are commonly referred to as super-aggregate rows, along with the grand total row.
+By using the ROLLUP option, you can use a single query to generate multiple grouping sets.
+
+[source,sql]
+----
+SELECT
+    warehouse, product, SUM(quantity)
+FROM
+    inventory
+GROUP BY ROLLUP (warehouse , product);
+----
+
+image::images/image-2024-05-03-19-44-07-885.png[width=500]
 
 === Window Functions
 
