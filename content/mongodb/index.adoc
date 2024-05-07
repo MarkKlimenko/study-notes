@@ -1,0 +1,9 @@
+= MongoDB notes
+:sectnums:
+:toc: left
+:toclevels: 5
+:icons: font
+:source-highlighter: coderay
+
+== Introduction
+

@@ -1,0 +1,11 @@
+= MongoDB sources list
+:sectnums:
+:toc: left
+:toclevels: 5
+:icons: font
+:source-highlighter: coderay
+
+== Mongodb The Definitive Guide 3rd
+
+link:./sources/mongodb_the_definitive_guide_3rd.pdf[mongodb_the_definitive_guide_3rd.pdf]
+
