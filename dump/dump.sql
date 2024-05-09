@@ -328,3 +328,51 @@ from temp
 group by hacker_id, name
 having sum(max_score) > 0
 order by sum(max_score) desc, hacker_id asc;
+
+
+CREATE OR REPLACE FUNCTION NthHighestSalary(N INT) RETURNS TABLE (Salary INT) AS $$
+BEGIN
+
+    if N - 1 < 0 then
+        RETURN null;
+    end if;
+
+    RETURN QUERY (
+        -- Write your PostgreSQL query statement below.
+        select distinct e.salary
+        from Employee e
+        order by e.salary desc
+        limit case
+                  when N - 1 < 0 then 0
+                  else 1
+            end
+            offset case
+                       when N - 1 < 0 then 0
+                       else N -1
+            end
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+
+select distinct p.product_id,
+                coalesce((
+                             select pin.new_price
+                             from Products pin
+                             where p.product_id = pin.product_id
+                               and pin.change_date <= '2019-08-16'
+                             order by pin.change_date desc
+                             limit 1
+                         ), 10)
+                    price
+from Products p;
+
+
+select distinct product_id,
+                FIRST_VALUE(new_price) OVER (
+        PARTITION BY product_id
+        where change_date <= '2019-08-16'
+        ORDER BY change_date desc
+    )
+    price
+from Products p;
