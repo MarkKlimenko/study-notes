@@ -1,0 +1,18 @@
+= System Design notes
+:sectnums:
+:toc: left
+:toclevels: 5
+:icons: font
+:source-highlighter: coderay
+
+== Introduction
+
+Other online resources
+¡ https://github.com/donnemartin/system-design-primer ¡ https://bigmachine.io/products/mission-interview/
+¡ http://geeksforgeeks.com
+¡ http://algoexpert.io
+¡ https://www.learnbay.io/
+¡ http://leetcode.com
+¡ https://bigmachine.io/products/mission-interview/
+
+

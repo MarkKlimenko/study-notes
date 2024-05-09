@@ -1,0 +1,12 @@
+= PostgreSQL sources list
+:sectnums:
+:toc: left
+:toclevels: 5
+:icons: font
+:source-highlighter: coderay
+
+== Acing the System Design Interview 2024
+
+link:./sources/Acing_the_System_Design_Interview_2024.pdf[Acing_the_System_Design_Interview_2024.pdf]
+
+
