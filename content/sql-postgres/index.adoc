@@ -1152,6 +1152,19 @@ WHERE cnt_tracts > 100
 GROUP BY county_code, cnt_tracts;
 ----
 
+[source,sql]
+----
+WITH table_1 AS (
+SELECT GENERATE_SERIES('2012-06-29', '2012-07-03', '1 day'::INTERVAL) AS date
+),
+table_2 AS (
+SELECT GENERATE_SERIES('2012-06-30', '2012-07-13', '1 day'::INTERVAL) AS date
+)
+SELECT * FROM
+table_1 t1
+JOIN table_2 t2 ON t1.date = t2.date;
+----
+
 ==== Writable
 
 [source,sql]

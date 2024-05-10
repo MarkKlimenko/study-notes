@@ -376,3 +376,29 @@ select distinct product_id,
     )
     price
 from Products p;
+
+
+
+with alltrn as (
+    select
+        to_char(trans_date, 'YYYY-MM') as month,
+        country,
+        count(*) trans_count,
+        sum(amount) trans_total_amount
+    from Transactions
+    group by month, country
+)
+with apprtrn as (
+    select
+        to_char(trans_date, 'YYYY-MM') as month,
+        country,
+        count(*) approved_count,
+        sum(amount) approved_total_amount
+    from Transactions
+    where state = 'approved'
+    group by month, country
+)
+
+select alltrn.month, alltrn.country, trans_count, approved_count, trans_total_amount, approved_total_amount
+from alltrn
+join apprtrn using(month, country);

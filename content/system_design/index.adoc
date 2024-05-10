@@ -7,12 +7,34 @@
 
 == Introduction
 
-Other online resources
-¡ https://github.com/donnemartin/system-design-primer ¡ https://bigmachine.io/products/mission-interview/
-¡ http://geeksforgeeks.com
-¡ http://algoexpert.io
-¡ https://www.learnbay.io/
-¡ http://leetcode.com
-¡ https://bigmachine.io/products/mission-interview/
+== Other online resources
+
+* https://github.com/donnemartin/system-design-primer
+* https://bigmachine.io/products/mission-interview/
+* http://geeksforgeeks.com
+* http://algoexpert.io
+* https://www.learnbay.io/
+* http://leetcode.com
+* https://bigmachine.io/products/mission-interview/
+
+For more information on A/B testing, refer to https://www.optimizely.com/optimization-glossary/ab-testing/.
+For multivariate testing, see Experimentation for Engineers by David Sweet (Manning Publications, 2023) or https://www.optimizely.com/optimization-glossary/multi-armed-bandit/ for an introduction to multi-armed bandit.)
+
+== Concepts
+
+* GeoDNS
+* Adding a caching service
+* Content distribution network CDN.
+CloudFlare, Rackspace, and AWS CloudFront
+* Horizontal scalability
+* CI/CD and Infrastructure as Code
+* Gradual rollouts and rollbacks
+* Experimentation.
+Common experimentation approaches are A/B and multivariate testing, such as multi-armed bandit.
+
+
+
+
+
 
 
