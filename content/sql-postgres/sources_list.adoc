@@ -9,10 +9,6 @@
 
 link:./sources/Learning_SQL_BeaulieuA_3rd_edition_2020.pdf[Learning_SQL_BeaulieuA_3rd_edition_2020.pdf]
 
-== SQL Cookbook (not PostgreSQL)
-
-link:./sources/SQL_Cookbook_MolinaroA_2nd_edition_2020.pdf[SQL_Cookbook_MolinaroA_2nd_edition_2020.pdf]
-
 == PostgreSQL Up and Running 3rd
 
 link:./sources/PostgreSQL_Up_and_Running_3rd_2018.pdf[PostgreSQL_Up_and_Running_3rd_2018.pdf]
@@ -22,3 +18,7 @@ link:./sources/PostgreSQL_Up_and_Running_3rd_2018.pdf[PostgreSQL_Up_and_Running_
 link:./sources/Learn_PostgreSQL_2nd_2023.pdf[Learn_PostgreSQL_2nd_2023.pdf]
 
 == https://www.postgresql.org/docs/current/
+
+== SQL Cookbook (has PostgreSQL examples)
+
+link:./sources/SQL_Cookbook_MolinaroA_2nd_edition_2020.pdf[SQL_Cookbook_MolinaroA_2nd_edition_2020.pdf]

@@ -402,3 +402,46 @@ with apprtrn as (
 select alltrn.month, alltrn.country, trans_count, approved_count, trans_total_amount, approved_total_amount
 from alltrn
 join apprtrn using(month, country);
+
+with temp as (
+    select
+        d.name Department,
+        e.name Employee,
+        e.salary Salary,
+        max(e.salary) over(partition by e.departmentId) maxSalary
+    from Employee e
+             join Department d on d.id = e.departmentId
+)
+select Department, Employee, Salary
+from temp
+where Salary = maxSalary;
+
+
+with temp as (
+    select
+        p.product_id,
+        units,
+        price * units total
+    from Prices p
+             join UnitsSold u on p.product_id = u.product_id
+        and purchase_date >= start_date
+        and purchase_date <= end_date
+)
+
+select
+    product_id,
+    round(sum(total)::decimal / sum(units), 2)  average_price
+from temp
+group by product_id;
+
+
+select
+    student_id,
+    student_name,
+    Examinations.subject_name,
+    count(*) attended_exams
+from Students
+         cross join Subjects
+         left join Examinations using(student_id)
+group by student_id, student_name, Examinations.subject_name
+order by student_id, Examinations.subject_name;
