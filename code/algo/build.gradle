@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+java {
+    sourceCompatibility = '17'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
