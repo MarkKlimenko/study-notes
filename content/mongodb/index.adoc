@@ -178,34 +178,55 @@ Select which database to use
 use video
 ----
 
-=== Create
+=== Create (Insert)
 
-[source,shell]
+[source,js]
 ----
+// insertOne will add an "_id" key to the document (if you do not supply one) and store the document in MongoDB
 movie = {"title" : "Star Wars: Episode IV - A New Hope",
   "director" : "George Lucas",
   "year" : 1977}
 
 db.movies.insertOne(movie)
+
+// or
+db.movies.insertOne({"title" : "Stand by Me"})
+
+// insertMany
+db.movies.drop()
+db.movies.insertMany([{"title" : "Ghostbusters"},
+{"title" : "E.T."},
+{"title" : "Blade Runner"}])
+db.movies.find()
 ----
+
+If you are just importing raw data (e.g., from a data feed or MySQL), there are command-line tools like mongoimport that can be used instead of a batch insert.
+
+==== Insert Validation
+
+MongoDB does minimal checks on data being inserted: it checks the document’s basic structure and adds an "_id" field if one does not exist.
+One of the basic structure checks is size: all documents must be smaller than 16 MB.
+This is a somewhat arbitrary limit (and may be raised in the future); it is mostly intended to prevent bad schema design and ensure consistent performance.
+
+IMPORTANT: To give you an idea of how much data 16 MB is, the entire text of War and Peace is just 3.14 MB.
 
 === Read
 
-[source,shell]
+[source,js]
 ----
 db.movies.findOne()
 ----
 
 === Update
 
-[source,shell]
+[source,js]
 ----
 db.movies.updateOne({title : "Star Wars: Episode IV - A New Hope"}, {$set : {reviews: []}})
 ----
 
 === Delete
 
-[source,shell]
+[source,js]
 ----
 db.movies.deleteOne({title : "Star Wars: Episode IV - A New Hope"})
 ----
