@@ -78,7 +78,10 @@ This means that the documents within a single collection can have any number of 
 [source,json]
 ----
 {"greeting" : "Hello, world!", "views": 3}
+----
 
+[source,json]
+----
 {"signoff": "Good night, and good luck"}
 ----
 
@@ -210,7 +213,9 @@ This is a somewhat arbitrary limit (and may be raised in the future); it is most
 
 IMPORTANT: To give you an idea of how much data 16 MB is, the entire text of War and Peace is just 3.14 MB.
 
-=== Read
+=== Read (findOne)
+
+Will be described later
 
 [source,js]
 ----
@@ -219,16 +224,375 @@ db.movies.findOne()
 
 === Update
 
+updateOne and update Many each take a filter document as their first parameter and a modifier document, which describes changes to make, as the second parameter.
+replaceOne also takes a filter as the first parameter, but as the second parameter replaceOne expects a document with which it will replace the document matching the filter.
+
+==== Replace
+
+[source,js]
+----
+var joe = db.users.findOne({"name" : "joe"});
+joe.relationships = {"friends" : joe.friends, "enemies" : joe.enemies};
+joe.username = joe.name;
+
+delete joe.friends;
+delete joe.enemies;
+delete joe.name;
+
+db.users.replaceOne({"name" : "joe"}, joe);
+----
+
+==== Update operators
+
+*$inc*
+
+[source,js]
+----
+/*
+{
+    "_id" : ObjectId("4b253b067525f35f94b60a31"),
+    "url" : "www.example.com",
+    "pageviews" : 52
+}
+*/
+
+db.analytics.updateOne({"url" : "www.example.com"},
+{"$inc" : {"pageviews" : 1}})
+
+db.analytics.findOne()
+/*
+{
+    "_id" : ObjectId("4b253b067525f35f94b60a31"),
+    "url" : "www.example.com",
+    "pageviews" : 53
+}
+*/
+----
+
+*$set $unset*
+
+Sets the value of a field.
+If the field does not yet exist, it will be created.
+This can be handy for updating schemas or adding user-defined keys.
+
 [source,js]
 ----
 db.movies.updateOne({title : "Star Wars: Episode IV - A New Hope"}, {$set : {reviews: []}})
+
+db.users.updateOne(
+    {"_id" : ObjectId("4b253b067525f35f94b60a31")},
+    {"$set" : {"favorite book" : "War and Peace"}}
+)
+
+// change data type
+db.users.updateOne(
+    {"name" : "joe"},
+    {"$set" : {"favorite book" : ["Cat's Cradle", "Foundation Trilogy", "Ender's Game"]}}
+)
+
+// remove field $unset
+db.users.updateOne(
+    {"name" : "joe"},
+    {"$unset" : {"favorite book" : 1}}
+)
+
+// You can also use "$set" to reach in and change embedded documents
+db.blog.posts.findOne()
+/*{
+    "_id" : ObjectId("4b253b067525f35f94b60a31"),
+    "title" : "A Blog Post",
+    "content" : "...",
+    "author" : {
+        "name" : "joe",
+        "email" : "joe@example.com"
+    }
+}*/
+db.blog.posts.updateOne(
+    {"author.name" : "joe"},
+    {"$set" : {"author.name" : "joe schmoe"}}
+)
+db.blog.posts.findOne()
+/*{
+    "_id" : ObjectId("4b253b067525f35f94b60a31"),
+    "title" : "A Blog Post",
+    "content" : "...",
+    "author" : {
+        "name" : "joe schmoe",
+        "email" : "joe@example.com"
+    }
+}*/
 ----
+
+==== Array operators
+
+*$push*
+
+[source,js]
+----
+/*
+{
+    "_id" : ObjectId("4b2d75476cc613d5ee930164"),
+    "title" : "A blog post",
+    "content" : "..."
+}
+*/
+
+db.blog.posts.updateOne(
+    {"title" : "A blog post"},
+    {"$push" : {"comments" :
+        {"name" : "joe", "email" : "joe@example.com", "content" : "nice post."}
+    }}
+)
+
+/*
+{
+    "_id" : ObjectId("4b2d75476cc613d5ee930164"),
+    "title" : "A blog post",
+    "content" : "...",
+    "comments" : [
+        {
+            "name" : "joe",
+            "email" : "joe@example.com",
+            "content" : "nice post."
+        }
+    ]
+}
+*/
+
+// Now, if we want to add another comment, we can simply use "$push" again
+----
+
+*$each*
+
+[source,js]
+----
+// You can push multiple values in one operation using the "$each" modifier for "$push"
+
+db.stock.ticker.updateOne({"_id" : "GOOG"},
+    {"$push" : {"hourly" : {"$each" : [562.776, 562.790, 559.123]}}})
+
+// This would push three new elements onto the array.
+----
+
+*$slice*
+
+If you only want the array to grow to a certain length, you can use the "$slice" modifier with "$push" to prevent an array from growing beyond a certain size, effectively making a “top N” list of items:
+
+[source,js]
+----
+// This example limits the array to the last 10 elements pushed.
+// If the array is smaller than 10 elements (after the push), all elements will be kept. If
+// the array is larger than 10 elements, only the last 10 elements will be kept.
+db.movies.updateOne({"genre" : "horror"},
+    {"$push" : {"top10" : {"$each" : ["Nightmare on Elm Street", "Saw"],
+    "$slice" : -10}}})
+----
+
+*$sort*
+
+Finally, you can apply the "$sort" modifier to "$push" operations before trimming
+
+[source,js]
+----
+db.movies.updateOne({"genre" : "horror"},
+    {"$push" : {"top10" : {"$each" : [{"name" : "Nightmare on Elm Street",
+    "rating" : 6.6},
+    {"name" : "Saw", "rating" : 4.3}],
+    "$slice" : -10,
+    "$sort" : {"rating" : -1}}}})
+----
+
+This will sort all of the objects in the array by their "rating" field and then keep the first 10.
+Note that you must include "$each"; you cannot just "$slice" or "$sort" an array with "$push"
+
+*$ne*
+
+You might want to treat an array as a set, only adding values if they are not present.
+
+[source,js]
+----
+db.papers.updateOne({"authors cited" : {"$ne" : "Richie"}},
+    {$push : {"authors cited" : "Richie"}})
+
+// This can also be done with "$addToSet", which is useful for cases where "$ne" won’t work or where "$addToSet" describes what is happening better.
+db.users.updateOne({"_id" : ObjectId("4b2d75476cc613d5ee930164")},
+    {"$addToSet" : {"emails" : "joe@gmail.com"}})
+----
+
+*$addToSet*
+
+You can also use "$addToSet" in conjunction with "$each" to add multiple unique values, which cannot be done with the "$ne"/"$push" combination.
+
+[source,js]
+----
+db.users.updateOne({"_id" : ObjectId("4b2d75476cc613d5ee930164")},
+    {"$addToSet" : {"emails" : {"$each" :
+    ["joe@php.net", "joe@example.com", "joe@python.org"]}}})
+----
+
+*$pop*
+
+If you want to treat the array like a queue or a stack, you can use "$pop", which can remove elements from either end. {"$pop" : {"key" : 1}} removes an element from the end of the array. {"$pop" : {"key" : -1}} removes it from the beginning.
+
+*$pull*
+
+Sometimes an element should be removed based on specific criteria, rather than its position in the array. "$pull" is used to remove elements of an array that match the given criteria.
+
+[source,js]
+----
+db.lists.insertOne({"todo" : ["dishes", "laundry", "dry cleaning"]})
+
+db.lists.updateOne({}, {"$pull" : {"todo" : "laundry"}})
+
+db.lists.findOne()
+// {
+//     "_id" : ObjectId("4b2d75476cc613d5ee930164"),
+//     "todo" : ["dishes", "dry cleaning"]
+// }
+----
+
+Pulling removes all matching documents, not just a single match.
+If you have an array that looks like [1, 1, 2, 1] and pull 1, you’ll end up with a single-element array, [2].
+
+*Positional array modifications*
+
+Arrays use 0-based indexing
+
+[source,js]
+----
+/*{
+  "_id": ObjectId(
+  "4b329a216cc613d5ee930192"
+  ),
+  "content": "...",
+  "comments": [
+    {
+      "comment": "good post",
+      "author": "John",
+      "votes": 0
+    },
+    {
+      "comment": "i thought it was too short",
+      "author": "Claire",
+      "votes": 3
+    },
+    {
+      "comment": "free watches",
+      "author": "Alice",
+      "votes": -5
+    },
+    {
+      "comment": "vacation getaways",
+      "author": "Lynn",
+      "votes": -7
+    }
+  ]
+}*/
+
+db.blog.updateOne({"post" : post_id},
+    {"$inc" : {"comments.0.votes" : 1}})
+
+db.blog.updateOne({"comments.author" : "John"},
+... {"$set" : {"comments.$.author" : "Jim"}})
+----
+
+==== Upserts
+
+An upsert is a special type of update.
+If no document is found that matches the filter, a new document will be created by combining the criteria and updated documents.
+If a matching document is found, it will be updated normally.
+Upserts can be handy because they can eliminate the need to “seed” your collection: you can often have the same code create and update documents.
+
+[source,js]
+----
+db.analytics.updateOne({"url" : "/blog"}, {"$inc" : {"pageviews" : 1}},
+    {"upsert" : true})
+
+// The new document is created by using the criteria document as a base and applying any modifier documents to it.
+
+db.users.updateOne({"rep" : 25}, {"$inc" : {"rep" : 3}}, {"upsert" : true})
+db.users.findOne({"_id" : ObjectId("5727b2a7223502483c7f3acd")} )
+// { "_id" : ObjectId("5727b2a7223502483c7f3acd"), "rep" : 28 }
+----
+
+==== The save shell helper
+
+save is a shell function that lets you insert a document if it doesn’t exist and update it if it does.
+It takes one argument: a document.
+If the document contains an "_id" key, save will do an upsert.
+Otherwise, it will do an insert. save is really just a convenience function so that programmers can quickly modify documents in the shell:
+
+[source,js]
+----
+var x = db.testcol.findOne()
+x.num = 42
+db.testcol.save(x)
+----
+
+==== Updating Multiple Documents
+
+So far in this chapter we have used updateOne to illustrate update operations.
+updateOne updates only the first document found that matches the filter criteria.
+If there are more matching documents, they will remain unchanged.
+To modify all of the documents matching a filter, use updateMany. updateMany follows the same semantics as updateOne and takes the same parameters.
+The key difference is in the number of documents that might be changed.
+
+[source,js]
+----
+// Suppose, for example, we want to give a gift to every user who has a birthday on a certain day
+
+db.users.insertMany([
+    {birthday: "10/13/1978"},
+    {birthday: "10/13/1978"},
+    {birthday: "10/13/1978"}])
+/*{
+"acknowledged" : true,
+"insertedIds" : [
+    ObjectId("5727d6fc6855a935cb57a65b"),
+    ObjectId("5727d6fc6855a935cb57a65c"),
+    ObjectId("5727d6fc6855a935cb57a65d")
+    ]
+}*/
+
+> db.users.updateMany({"birthday" : "10/13/1978"},
+    {"$set" : {"gift" : "Happy Birthday!"}})
+// { "acknowledged" : true, "matchedCount" : 3, "modifiedCount" : 3 }
+----
+
+==== Returning Updated Documents
+
+findOneAndDelete, findOneAndReplace, and findOneAndUpdate
+
+[source,js]
+----
+db.processes.findOneAndUpdate({"status" : "READY"},
+    {"$set" : {"status" : "RUNNING"}},
+    {"sort" : {"priority" : -1}})
+
+/*{
+"_id" : ObjectId("4b3e7a18005cab32be6291f7"),
+"priority" : 1,
+"status" : "READY"
+}*/
+----
+
+Notice that the status is still "READY" in the returned document because the findOneAndUpdate method defaults to returning the state of the document before it was modified.
+It will return the updated document if we set the "returnNewDocu ment" field in the options document to true.
 
 === Delete
 
 [source,js]
 ----
 db.movies.deleteOne({title : "Star Wars: Episode IV - A New Hope"})
+
+// or
+db.movies.deleteOne({"_id" : 4})
+
+// or
+db.movies.deleteMany({"year" : 1984})
+
+// or
+db.movies.drop()
 ----
 
 Use deleteMany to delete all documents matching a filter
@@ -312,6 +676,109 @@ Binary data is the only way to save non-UTF-8 strings to the database.
 MongoDB also makes it possible to store arbitrary JavaScript in queries and documents:
 
 {"x" : function() { /* ... */ }}
+
+== Querying
+
+** *findOne()* returns a document, or nil/null/whatever-it-is-called
+** *find()* returns a cursor, which can be empty.
+But the object returned is always defined.
+
+=== Introduction to find
+
+The find method is used to perform queries in MongoDB.
+Querying returns a subset of documents in a collection, from no documents at all to the entire collection.
+Which documents get returned is determined by the first argument to find, which is a document specifying the query criteria.
+
+An empty query document (i.e., {}) matches everything in the collection.
+If find isn’t given a query document, it defaults to {}
+
+[source,js]
+----
+db.c.find()
+----
+
+Add search parameters
+
+[source,js]
+----
+db.users.find({"age" : 27})
+db.users.find({"username" : "joe"})
+db.users.find({"username" : "joe", "age" : 27})
+----
+
+=== Specifying Which Keys to Return
+
+[source,js]
+----
+// Include
+db.users.find({}, {"username" : 1, "email" : 1})
+/*{
+    "_id" : ObjectId("4ba0f0dfd22aa494fd523620"),
+    "username" : "joe",
+    "email" : "joe@example.com"
+}*/
+
+// Exclude
+db.users.find({}, {"fatal_weakness" : 0})
+db.users.find({}, {"username" : 1, "_id" : 0})
+----
+
+=== Query Criteria
+
+==== Query Conditionals
+
+"$lt", "$lte", "$gt", and "$gte" are all comparison operators, corresponding to <, <=, >, and >=, respectively.
+
+[source,js]
+----
+// look for users who are between the ages of 18 and 30
+db.users.find({"age" : {"$gte" : 18, "$lte" : 30}})
+
+// find people who registered before January 1, 2007
+start = new Date("01/01/2007")
+db.users.find({"registered" : {"$lt" : start}})
+
+// to find all users who do not have the username “joe”
+db.users.find({"username" : {"$ne" : "joe"}})
+----
+
+==== OR Queries
+
+[source,js]
+----
+// "$in" can be used to query for a variety of values for a single key
+db.raffle.find({"ticket_no" : {"$in" : [725, 542, 390]}})
+
+// "$in" is very flexible and allows you to specify criteria of different types as well as values
+db.users.find({"user_id" : {"$in" : [12345, "joe"]}})
+
+// The opposite of "$in" is "$nin", which returns documents that don’t match any of the criteria in the array.
+db.raffle.find({"ticket_no" : {"$nin" : [725, 542, 390]}})
+
+// "$or" takes an array of possible criteria
+db.raffle.find({"$or" : [{"ticket_no" : 725}, {"winner" : true}]})
+
+// "$or" can contain other conditionals
+db.raffle.find({"$or" : [{"ticket_no" : {"$in" : [725, 542, 390]}},
+    {"winner" : true}]})
+----
+
+==== $not
+
+"$not" is a metaconditional: it can be applied on top of any other criteria
+
+[source,js]
+----
+// query returns users with "id_num"s of 1, 6, 11, 16, and so on
+db.users.find({"id_num" : {"$mod" : [5, 1]}})
+
+// To return users with "id_num"s of 2, 3, 4, 5, 7, 8, 9, 10, 12, etc., we can use "$not"
+db.users.find({"id_num" : {"$not" : {"$mod" : [5, 1]}}})
+----
+
+=== Type-Specific Queries
+
+
 
 
 
