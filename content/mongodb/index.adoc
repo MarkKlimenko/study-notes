@@ -778,6 +778,151 @@ db.users.find({"id_num" : {"$not" : {"$mod" : [5, 1]}}})
 
 === Type-Specific Queries
 
+*null*
+
+null behaves a bit strangely.
+It does match itself.
+
+[source,js]
+----
+// if we have a collection with the following documents
+db.c.find()
+/*{ "_id" : ObjectId("4ba0f0dfd22aa494fd523621"), "y" : null }
+{ "_id" : ObjectId("4ba0f0dfd22aa494fd523622"), "y" : 1 }
+{ "_id" : ObjectId("4ba0f148d22aa494fd523623"), "y" : 2 }*/
+
+// null also matches “does not exist.” Thus, querying for a key with the value null will return all documents lacking that key
+db.c.find({"z" : null})
+/*{ "_id" : ObjectId("4ba0f0dfd22aa494fd523621"), "y" : null }
+{ "_id" : ObjectId("4ba0f0dfd22aa494fd523622"), "y" : 1 }
+{ "_id" : ObjectId("4ba0f148d22aa494fd523623"), "y" : 2 }*/
+
+// If we only want to find keys whose value is null, we can check that the key is null and exists using the "$exists" conditional
+db.c.find({"z" : {"$eq" : null, "$exists" : true}})
+----
+
+*Regular Expressions*
+
+[source,js]
+----
+// if we want to find all users with the name “Joe” or “joe,” we can use a regular expression to do case-insensitive matching
+db.users.find( {"name" : {"$regex" : /joe/i } })
+
+// Regular expression flags (e.g., i) are allowed but not required
+db.users.find({"name" : /joey?/i})
+----
+
+MongoDB uses the Perl Compatible Regular Expression (PCRE) library to match regular expressions
+
+==== Querying Arrays
+
+Querying for elements of an array is designed to behave the way querying for scalars does.
+
+[source,js]
+----
+db.food.insertOne({"fruit" : ["apple", "banana", "peach"]})
+
+// the following query will successfully match the document
+db.food.find({"fruit" : "banana"})
+----
+
+*$all*
+
+If you need to match arrays by more than one element, you can use "$all".
+
+[source,js]
+----
+db.food.insertOne({"_id" : 1, "fruit" : ["apple", "banana", "peach"]})
+db.food.insertOne({"_id" : 2, "fruit" : ["apple", "kumquat", "orange"]})
+db.food.insertOne({"_id" : 3, "fruit" : ["cherry", "banana", "apple"]})
+
+// Then we can find all documents with both "apple" and "banana" elements by querying with "$all"
+db.food.find({fruit : {$all : ["apple", "banana"]}})
+//{"_id" : 1, "fruit" : ["apple", "banana", "peach"]}
+//{"_id" : 3, "fruit" : ["cherry", "banana", "apple"]}
+
+// this will match the first of our three documents
+db.food.find({"fruit" : ["apple", "banana", "peach"]})
+----
+
+Order does not matter
+
+*$size*
+
+A useful conditional for querying arrays is "$size", which allows you to query for arrays of a given size.
+
+[source,js]
+----
+db.food.find({"fruit" : {"$size" : 3}})
+----
+
+*$slice*
+
+[source,js]
+----
+db.blog.posts.findOne(criteria, {"comments" : {"$slice" : 10}})
+db.blog.posts.findOne(criteria, {"comments" : {"$slice" : [23, 10]}})
+----
+
+==== Querying on Embedded Document
+
+[source,js]
+----
+/*{
+    "name" : {
+        "first" : "Joe",
+        "last" : "Schmoe"
+    },
+    "age" : 45
+}*/
+
+db.people.find({"name" : {"first" : "Joe", "last" : "Schmoe"}})
+----
+
+However, a query for a full subdocument must exactly match the subdocument.
+If Joe decides to add a middle name field, suddenly this query won’t work anymore; it doesn’t match the entire embedded document!
+This type of query is also ordersensitive:
+{"last" : "Schmoe", "first" : "Joe"} would not be a match.
+
+[source,js]
+----
+// If possible, it’s usually a good idea to query for just a specific key or keys of an embedded document.
+db.people.find({"name.first" : "Joe", "name.last" : "Schmoe"})
+----
+
+==== $where Queries
+
+Key/value pairs are a fairly expressive way to query, but there are some queries that they cannot represent.
+For queries that cannot be done any other way, there are "$where" clauses, which allow you to execute arbitrary JavaScript as part of your query.
+This allows you to do (almost) anything within a query.
+For security, use of "$where" clauses should be highly restricted or eliminated.
+End users should never be allowed to execute arbitrary "$where" clauses.
+
+[source,js]
+----
+db.foo.insertOne({"apple" : 1, "banana" : 6, "peach" : 3})
+db.foo.insertOne({"apple" : 8, "spinach" : 4, "watermelon" : 4})
+
+// We’d like to return documents where any two of the fields are equal.
+// in the second document, "spinach" and "watermelon" have the same value, so we’d like that document returned
+
+db.foo.find({"$where" : function () {
+  for (var current in this) {
+    for (var other in this) {
+        if (current != other && this[current] == this[other]) {
+            return true;
+        }
+    }
+  }
+  return false;
+}})
+
+// If the function returns true, the document will be part of the result set; if it returns false, it won’t be.
+----
+
+"$where" queries should not be used unless strictly necessary: they are much slower than regular queries.
+Each document has to be converted from BSON to a JavaScript object and then run through the "$where" expression.
+Indexes cannot be used to satisfy a "$where" either.
 
 
 
