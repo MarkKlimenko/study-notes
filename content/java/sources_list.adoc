@@ -5,20 +5,38 @@
 :icons: font
 :source-highlighter: coderay
 
-== Learning SQL (not PostgreSQL)
+== JMM
 
-link:./sources/Learning_SQL_BeaulieuA_3rd_edition_2020.pdf[Learning_SQL_BeaulieuA_3rd_edition_2020.pdf]
+=== Approved
 
-== PostgreSQL Up and Running 3rd
+==== The Java Language Specification JLS 17
 
-link:./sources/PostgreSQL_Up_and_Running_3rd_2018.pdf[PostgreSQL_Up_and_Running_3rd_2018.pdf]
+This is the official documentation for the Java programming language and includes a detailed explanation of the Java Memory Model.
 
-== Learn PostgreSQL, Pirozzi Enrico, Ferrari Luca, 2nd Edition (Expert insight) - 2023
+https://docs.oracle.com/javase/specs/jls/se17/html/jls-17.html
 
-link:./sources/Learn_PostgreSQL_2nd_2023.pdf[Learn_PostgreSQL_2nd_2023.pdf]
+==== Digital Ocean Articles
 
-== https://www.postgresql.org/docs/current/
+https://www.digitalocean.com/community/tutorials/java-jvm-memory-model-memory-management-in-java
 
-== SQL Cookbook (has PostgreSQL examples)
+=== NOT Approved
 
-link:./sources/SQL_Cookbook_MolinaroA_2nd_edition_2020.pdf[SQL_Cookbook_MolinaroA_2nd_edition_2020.pdf]
+==== Close Encounters of The Java Memory Model Kind
+
+https://shipilev.net/blog/2016/close-encounters-of-jmm-kind/
+
+==== Java Memory Model Pragmatics (transcript)
+
+https://shipilev.net/blog/2014/jmm-pragmatics/
+
+==== Java Concurrency in Practice by Brian Goetz
+
+This book is widely regarded as one of the best resources for learning about Java concurrency, including the Java Memory Model.
+
+==== Java Performance
+
+The Definitive Guide by Scott Oaks - This book provides a deep dive into the performance aspects of the Java programming language, including the Java Memory Model.
+
+
+
+
