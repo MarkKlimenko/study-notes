@@ -781,12 +781,53 @@ image::images/image-2024-04-30-14-23-04-762.png[width=500]
 
 ==== Matching Conditions
 
+===== LIKE
+
+* LIKE
+* NOT LIKE
+
 Using wildcards `WHERE last_name LIKE '_A_T%S';`
 
 * _ Exactly one character
 * % Any number of characters (including 0)
 
-Using regular expressions `WHERE last_name REGEXP '^[QY]';`
+[source,sql]
+----
+select 'abc' LIKE 'abc';    --true
+select 'abc' LIKE 'a%';     --true
+select 'abc' LIKE '_b_';    --true
+select 'abc' LIKE 'c';      --false
+----
+
+===== SIMILAR TO (Regular expressions)
+
+[source,sql]
+----
+select 'abc' SIMILAR TO 'abc';          --true
+select 'abc' SIMILAR TO 'a';            --false
+select 'abc' SIMILAR TO '%(b|d)%';      --true
+select 'abc' SIMILAR TO '(b|c)%';       --false
+select '-abc-' SIMILAR TO '%\mabc\M%';  --true
+select 'xabcy' SIMILAR TO '%\mabc\M%';  --false
+----
+
+https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP
+
+===== POSIX (Regular expressions)
+
+image::images/image-2024-05-20-19-01-56-834.png[width=500]
+
+[source,sql]
+----
+select 'abcd' ~ 'bc';     --true
+select 'abcd' ~ 'a.c';    --true — dot matches any character
+select 'abcd' ~ 'a.*d';   --true — * repeats the preceding pattern item
+select 'abcd' ~ '(b|x)';  --true — | means OR, parentheses group
+select 'abcd' ~ '^a';     --true — ^ anchors to start of string
+select 'abcd' ~ '^(b|c)'; --false — would match except for anchoring
+----
+
+https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-REGEXP
 
 ==== NULL
 
