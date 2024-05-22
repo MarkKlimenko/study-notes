@@ -71,7 +71,50 @@ The default value is 2.
 
 === Java Garbage Collection
 
+Garbage Collector is the program running in the background that looks into all the objects in the memory and find out objects that are not referenced by any part of the program.
+All these unreferenced objects are deleted and space is reclaimed for allocation to other objects.
+One of the basic ways of garbage collection involves three steps:
 
+* **Marking:** This is the first step where garbage collector identifies which objects are in use and which ones are not in use.
+* **Normal Deletion:** Garbage Collector removes the unused objects and reclaim the free space to be allocated to other objects.
+* **Deletion with Compacting:** For better performance, after deleting unused objects, all the survived objects can be moved to be together.
+This will increase the performance of allocation of memory to newer objects.
+
+There are two problems with a simple mark and delete approach.
+
+* First one is that it’s not efficient because most of the newly created objects will become unused
+* Secondly objects that are in-use for multiple garbage collection cycle are most likely to be in-use for future cycles too.
+
+=== Java Garbage Collection Types
+
+There are five types of garbage collectors that we can use in our applications.
+We just need to use the JVM switch to enable the garbage collection strategy for the application.
+
+** *Serial GC (-XX:+UseSerialGC):*
+Serial GC uses the simple mark-sweep-compact approach for young and old generations garbage collection i.e Minor and Major GC.
+Serial GC is useful in client machines such as our simple stand-alone applications and machines with smaller CPU.
+It is good for small applications with low memory footprint.
+** *Parallel GC (-XX:+UseParallelGC):*
+Parallel GC is same as Serial GC except that is spawns N threads for young generation garbage collection where N is the number of CPU cores in the system.
+We can control the number of threads using -XX:ParallelGCThreads=n JVM option.
+Parallel Garbage Collector is also called throughput collector because it uses multiple CPUs to speed up the GC performance.
+Parallel GC uses a single thread for Old Generation garbage collection.
+** *Parallel Old GC (-XX:+UseParallelOldGC):*
+This is the same as Parallel GC except that it uses multiple threads for both Young Generation and Old Generation garbage collection.
+** *Concurrent Mark Sweep (CMS) Collector (-XX:+UseConcMarkSweepGC):*
+CMS Collector is also referred as concurrent low pause collector.
+It does the garbage collection for the Old generation.
+CMS collector tries to minimize the pauses due to garbage collection by doing most of the garbage collection work concurrently with the application threads.
+CMS collector on the young generation uses the same algorithm as that of the parallel collector.
+This garbage collector is suitable for responsive applications where we can’t afford longer pause times.
+We can limit the number of threads in CMS collector using -XX:ParallelCMSThreads=n JVM option.
+** *G1 Garbage Collector (-XX:+UseG1GC):*
+The Garbage First or G1 garbage collector is available from Java 7 and its long term goal is to replace the CMS collector.
+The G1 collector is a parallel, concurrent, and incrementally compacting low-pause garbage collector.
+Garbage First Collector doesn’t work like other collectors and there is no concept of Young and Old generation space.
+It divides the heap space into multiple equal-sized heap regions.
+When a garbage collection is invoked, it first collects the region with lesser live data, hence “Garbage First”.
+You can find more details about it at Garbage-First Collector Oracle Documentation.
 
 == Java Volatile
 
