@@ -19,6 +19,10 @@ https://docs.oracle.com/javase/specs/jls/se17/html/jls-17.html
 
 https://www.digitalocean.com/community/tutorials/java-jvm-memory-model-memory-management-in-java
 
+==== Jenkov jmm
+
+https://jenkov.com/tutorials/java-concurrency/java-memory-model.html
+
 === NOT Approved
 
 ==== Close Encounters of The Java Memory Model Kind

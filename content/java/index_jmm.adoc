@@ -8,6 +8,95 @@
 
 == Memory Model
 
+The Java memory model used internally in the JVM divides memory between thread stacks and the heap.
+
+image::images/image-2024-05-21-20-52-00-988.png[width=500]
+
+Each thread running in the Java virtual machine has its own thread stack.
+
+*The thread stack contains:*
+
+* information about what methods the thread has called to reach the current point of execution.
+* all local variables for each method being executed.
+* all local variables of primitive types ( boolean, byte, short, char, int, long, float, double) are fully stored on the thread stack and are thus not visible to other threads.
+One thread may pass a copy of a primitive variable to another thread, but it cannot share the primitive local variable itself.
+
+*The heap contains:*
+
+* all objects created in your Java application, regardless of what thread created the object.
+This includes the object versions of the primitive types (e.g. Byte, Integer, Long etc.).
+It does not matter if an object was created and assigned to a local variable, or created as a member variable of another object, the object is still stored on the heap.
+
+image::images/image-2024-05-22-10-15-45-833.png[width=500]
+
+=== Hardware Memory Architecture
+
+image::images/image-2024-05-22-10-42-39-951.png[width=500]
+
+Each CPU contains a set of registers which are essentially in-CPU memory.
+The CPU can perform operations much faster on these registers than it can perform on variables in main memory.
+That is because the CPU can access these registers much faster than it can access main memory.
+
+Each CPU may also have a CPU cache memory layer.
+In fact, most modern CPUs have a cache memory layer of some size.
+The CPU can access its cache memory much faster than main memory, but typically not as fast as it can access its internal registers.
+
+A computer also contains a main memory area (RAM).
+All CPUs can access the main memory.
+The main memory area is typically much bigger than the cache memories of the CPUs.
+
+The hardware memory architecture does not distinguish between thread stacks and heap.
+
+image::images/image-2024-05-22-10-46-53-155.png[width=500]
+
+*The two main problems are:*
+
+* Visibility of thread updates (writes) to shared variables.
+* Race conditions when reading, checking and writing shared variables.
+
+=== Problems
+
+==== Visibility of Shared Objects
+
+If two or more threads are sharing an object, without the proper use of either volatile declarations or synchronization, updates to the shared object made by one thread may not be visible to other threads.
+
+A thread running on CPU one then reads the shared object into its CPU cache.
+There it makes a change to the shared object.
+As long as the CPU cache has not been flushed back to main memory, the changed version of the shared object is not visible to threads running on other CPUs.
+
+To solve this problem you can use Java's `volatile` keyword.
+The volatile keyword can make sure that a given variable is read directly from main memory, and always written back to main memory when updated.
+
+==== Race Conditions
+
+If two or more threads share an object, and more than one thread updates variables in that shared object, race conditions may occur.
+
+To solve this problem you can use a Java `synchronized` block.
+A synchronized block guarantees that only one thread can enter a given critical section of the code at any given time.
+
+=== Java Happens Before Guarantee
+
+// TODO:
+
+=== Java Volatile
+
+`volatile` says for a programmer that the value always will be up to date.
+The problem is that the value can be saved on different types of hardware memory.
+For example it can be CPU registers, CPU cache, RAM.
+СPU registers and CPU cache belong to CPU and can not share a data unlike of RAM which is on the rescue in multithreading environment
+
+image::images/image-2024-05-20-21-03-12-208.png[width=500]
+
+_`volatile` keyword says that a variable will be read and written from/to RAM memory directly.
+(TODO: check this information)_
+
+IMPORTANT: `volatile` keyword does not cure a race condition situation.
+To solve it use `synchronized` keyword.
+
+*As a result it is safety only when one thread writes and others just read the `volatile` value.*
+
+== Heap Inside
+
 image::images/image-2024-05-20-21-36-37-769.png[width=500]
 
 JVM memory is divided into separate parts.
@@ -115,23 +204,6 @@ Garbage First Collector doesn’t work like other collectors and there is no con
 It divides the heap space into multiple equal-sized heap regions.
 When a garbage collection is invoked, it first collects the region with lesser live data, hence “Garbage First”.
 You can find more details about it at Garbage-First Collector Oracle Documentation.
-
-== Java Volatile
-
-`volatile` says for a programmer that the value always will be up to date.
-The problem is that the value can be saved on different types of hardware memory.
-For example it can be CPU registers, CPU cache, RAM.
-СPU registers and CPU cache belong to CPU and can not share a data unlike of RAM which is on the rescue in multithreading environment
-
-image::images/image-2024-05-20-21-03-12-208.png[width=500]
-
-_`volatile` keyword says that a variable will be read and written from/to RAM memory directly.
-(TODO: check this information)_
-
-IMPORTANT: `volatile` keyword does not cure a race condition situation.
-To solve it use `synchronized` keyword.
-
-*As a result it is safety only when one thread writes and others just read the `volatile` value.*
 
 == Interview questions
 
