@@ -1,4 +1,4 @@
-= Java Memory Model and Management notes
+= Java Memory Model and Memory Management
 :sectnums:
 :toc: left
 :toclevels: 5
