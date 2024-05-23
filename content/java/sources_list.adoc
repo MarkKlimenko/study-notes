@@ -5,7 +5,7 @@
 :icons: font
 :source-highlighter: coderay
 
-== JMM
+== JMM (Model)
 
 === Approved
 
@@ -41,6 +41,15 @@ This book is widely regarded as one of the best resources for learning about Jav
 
 The Definitive Guide by Scott Oaks - This book provides a deep dive into the performance aspects of the Java programming language, including the Java Memory Model.
 
+== JMM (Management)
 
+=== Approved
 
+==== Garbage Collection и JVM
+
+https://habr.com/ru/companies/otus/articles/776342/
+
+==== Дюк, вынеси мусор!
+
+https://habr.com/ru/articles/269621/
 
