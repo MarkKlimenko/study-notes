@@ -1,4 +1,4 @@
-= Java Memory Model notes
+= Java Memory Model and Management notes
 :sectnums:
 :toc: left
 :toclevels: 5
@@ -74,11 +74,7 @@ If two or more threads share an object, and more than one thread updates variabl
 To solve this problem you can use a Java `synchronized` block.
 A synchronized block guarantees that only one thread can enter a given critical section of the code at any given time.
 
-=== Java Happens Before Guarantee
-
-// TODO:
-
-=== Java Volatile
+=== Volatile
 
 `volatile` says for a programmer that the value always will be up to date.
 The problem is that the value can be saved on different types of hardware memory.
@@ -87,13 +83,21 @@ For example it can be CPU registers, CPU cache, RAM.
 
 image::images/image-2024-05-20-21-03-12-208.png[width=500]
 
-_`volatile` keyword says that a variable will be read and written from/to RAM memory directly.
-(TODO: check this information)_
+`volatile` keyword says that a variable will be read and written from/to RAM memory directly.
 
 IMPORTANT: `volatile` keyword does not cure a race condition situation.
 To solve it use `synchronized` keyword.
 
 *As a result it is safety only when one thread writes and others just read the `volatile` value.*
+
+=== Happens Before
+
+*Ordering* - compiler is able to change an ordering of operations/instructions of source code to make some optimisations.
+
+Two actions can be ordered by a happens-before relationship.
+If one action happens-before another, then the first is visible to and ordered before the second.
+
+*A write to a volatile field happens-before every subsequent read of that field.*
 
 == Heap Inside
 
@@ -129,13 +133,15 @@ All the Garbage Collections are “Stop the World” events because all applicat
 Since Young generation keeps short-lived objects, Minor GC is very fast and the application doesn’t get affected by this.
 However, Major GC takes a long time because it checks all the live objects.
 
-=== Permanent Generation
+=== Permanent Generation (Metaspace)
 
 Permanent Generation or “Perm Gen” contains the application metadata required by the JVM to describe the classes and methods used in the application.
 Note that Perm Gen is not part of Java Heap memory.
 Perm Gen is populated by JVM at runtime based on the classes used by the application.
 Perm Gen also contains Java SE library classes and methods.
 Perm Gen objects are garbage collected in a full garbage collection.
+
+*For java 8 it is Metaspace*
 
 === Java Stack Memory
 
