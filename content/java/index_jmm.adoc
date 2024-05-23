@@ -8,6 +8,9 @@
 
 == Memory Model
 
+The Java Memory Model (JMM) defines the allowable behavior of multithreaded programs.
+It places execution-time constraints on the relationship between threads and main memory in order to achieve consistent and reliable Java applications.
+
 The Java memory model used internally in the JVM divides memory between thread stacks and the heap.
 
 image::images/image-2024-05-21-20-52-00-988.png[width=500]
@@ -31,7 +34,7 @@ image::images/image-2024-05-22-10-15-45-833.png[width=500]
 
 === Java Heap Space vs Stack Memory
 
-// TODO: https://www.digitalocean.com/community/tutorials/java-heap-space-vs-stack-memory
+TODO: https://www.digitalocean.com/community/tutorials/java-heap-space-vs-stack-memory
 
 === Hardware Memory Architecture
 
@@ -129,7 +132,7 @@ Usually, garbage collection is performed in Old Generation memory when it’s fu
 Old Generation Garbage Collection is called *Major GC* and usually takes a longer time.
 
 *Major GC can involve young and old generation*
-// TODO: check it
+TODO: check it
 
 === Stop the World Event
 
@@ -148,12 +151,12 @@ Perm Gen objects are garbage collected in a full garbage collection.
 *For java 8 it is Metaspace*
 
 Metaspace is autoextending
-// TODO:
+TODO:
 
 === References
 
 WeakReference SoftReference
-// TODO:
+TODO:
 
 == Memory Management
 
@@ -190,7 +193,7 @@ There are two problems with a simple mark and delete approach.
 There are five types of garbage collectors that we can use in our applications.
 We just need to use the JVM switch to enable the garbage collection strategy for the application.
 
-// TODO:
+TODO:
 
 ** *Serial GC (-XX:+UseSerialGC):*
 Serial GC uses the simple mark-sweep-compact approach for young and old generations garbage collection i.e Minor and Major GC.
@@ -218,9 +221,9 @@ You can find more details about it at Garbage-First Collector Oracle Documentati
 ** *Epsilon GC:*
 The Garbage is not needed.
 ** *ZGC:*
-// TODO:
+TODO:
 ** *Shenandoah GC:*
-// TODO:
+TODO:
 
 == Interview questions
 
@@ -282,6 +285,7 @@ The Java garbage collector scans Java's dynamic memory areas for objects, markin
 After all possible paths to objects are investigated, those objects that are not marked (i.e. are not referenced) are known to be garbage and are collected.
 
 === Can I import same package/class twice?
+
 Will the JVM load the package twice at runtime?
 
 One can import the same package or same class multiple times.
@@ -293,6 +297,7 @@ And the JVM will internally load the class only once no matter how many times yo
 Class (???), Heap , Stack , Register , Native Method Stack.
 
 === What is a class loader ?
+
 What are the different class loaders used by JVM ?
 
 Part of JVM which is used to load classes and interfaces.
@@ -401,6 +406,7 @@ Yes, We can call garbage collector of JVM to delete any unused variables and unr
 This gc( ) method appears in both Runtime and System classes of java.lang package.
 
 === What are different ways to create String Object?
+
 Explain.
 
 String str = new String("abc"); String str1 = "abc";
