@@ -155,6 +155,8 @@ To solve it use `synchronized` keyword.
 
 Locking can guarantee both visibility and atomicity; volatile variables can only guarantee visibility.
 
+TODO: Alternative @GuardedBy and safe publication
+
 == Happens Before
 
 *Ordering* - compiler is able to change an ordering of operations/instructions of source code to make some optimisations.
