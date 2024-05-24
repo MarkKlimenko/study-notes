@@ -23,6 +23,10 @@ https://www.digitalocean.com/community/tutorials/java-jvm-memory-model-memory-ma
 
 https://jenkov.com/tutorials/java-concurrency/java-memory-model.html
 
+==== Глубокое погружение в Java Memory Model
+
+https://habr.com/ru/articles/685518/
+
 === NOT Approved
 
 ==== Close Encounters of The Java Memory Model Kind
