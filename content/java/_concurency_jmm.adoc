@@ -7,10 +7,10 @@
 
 == Introduction
 
-The Java Memory Model (JMM) defines the allowable behavior of multithreaded programs.
+*The Java Memory Model (JMM) defines the allowable behavior of multithreaded programs.*
 It places execution-time constraints on the relationship between threads and main memory in order to achieve consistent and reliable Java applications.
 
-Модель памяти делает легальными многие оптимизации компилятора, JVM и процессора, но в то же время закрепляет условия, при которых программа будет вести себя корректно в многопоточной среде даже в присутствие оптимизаций.
+Модель памяти делает легальными многие оптимизации компилятора, JVM и процессора, но в то же время *закрепляет условия, при которых программа будет вести себя корректно в многопоточной среде* даже в присутствие оптимизаций.
 
 * Разрешает выполнение различных оптимизаций компилятора, JVM или процессора
 * Строго закрепляет условия, при которых программа считается правильно синхронизированной, и закрепляет поведение правильно синхронизированных программ
@@ -115,7 +115,7 @@ image::images/image-2024-05-22-10-46-53-155.png[width=500]
 
 === Visibility of Shared Objects
 
-If two or more threads are sharing an object, without the proper use of either volatile declarations or synchronization, updates to the shared object made by one thread may not be visible to other threads.
+If two or more threads are sharing an object, without the proper use of either *volatile declarations or synchronization*, updates to the shared object made by one thread may not be visible to other threads.
 
 A thread running on CPU one then reads the shared object into its CPU cache.
 There it makes a change to the shared object.
