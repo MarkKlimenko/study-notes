@@ -1,0 +1,15 @@
+= Generics
+:sectnums:
+:toc: left
+:toclevels: 5
+:icons: font
+:source-highlighter: coderay
+
+== Info
+
+TODO:
+
+TODO: create task for interview
+ArrayList<Number> list = new ArrayList<Integer>(); // DOES NOT COMPILE
+
+List<? extends Number> list = new ArrayList<Integer>();
