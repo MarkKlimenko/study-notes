@@ -40,7 +40,7 @@ Collections.sort(list); Collections.binarySearch(list, 3)
 
 === Wrapper Classes and Autoboxing
 
-Autoboxing automatically converts a primitive to the corresponding wrapper classes when needed if the generic type is specifi ed in the declaration.
+Autoboxing automatically converts a primitive to the corresponding wrapper classes when needed if the generic type is specified in the declaration.
 Unsurprisingly, unboxing automatically converts a wrapper class back to a primitive.
 
 == Java Collections Framework
@@ -168,7 +168,20 @@ In the form of old school analogies, ArrayList is to Vector as HashMap is to Has
 ==== HashMap
 
 https://habr.com/ru/articles/128017/
+
 https://habr.com/ru/articles/421179/
+
+* *table* — Массив типа Entry[], который является хранилищем ссылок на списки (цепочки) значений;
+* *loadFactor* — Коэффициент загрузки. Значение по умолчанию 0.75 является хорошим компромиссом между временем доступа и объемом хранимых данных;
+* *threshold* — Предельное количество элементов, при достижении которого, размер хэш-таблицы увеличивается вдвое. Рассчитывается по формуле (capacity * loadFactor);
+* *size* — Количество элементов HashMap-а;
+
+*Изменения в Java 8*
+----
+Как мы уже знаем в случае возникновения коллизий объект node сохраняется в структуре данных "связанный список" и метод equals() используется для сравнения ключей. Это сравнения для поиска верного ключа в связанном списке -линейная операция и в худшем случае сложность равнa O(n).
+
+Для исправления этой проблемы в Java 8 после достижения определенного порога вместо связанных списков используются сбалансированные деревья. Это означает, что HashMap в начале сохраняет объекты в связанном списке, но после того, как колличество элементов в хэше достигает определенного порога происходит переход к сбалансированным деревьям. Что улучшает производительность в худшем случае с O(n) до O(log n).
+----
 
 ==== LinkedHashMap
 
@@ -249,4 +262,9 @@ Comparator<Duck> byWeight = (d1, d2) -> d1.getWeight()—d2.getWeight();
 Collections.sort(ducks, byWeight);
 ----
 
+== Questions
+
+=== Java собеседование. Коллекции
+
+https://habr.com/ru/articles/162017/
 
