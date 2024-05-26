@@ -194,16 +194,59 @@ image::images/image-2024-05-25-18-39-18-752.png[width=500]
 
 == Comparator vs. Comparable
 
+You can sort objects that you create.
+Java provides an interface called *Comparable*.
+If your class implements *Comparable*, it can be used in these data structures that require comparison.
+There is also a class called *Comparator*, which is used to specify that you want to use a different order than the object itself provides.
+
+For numbers, order is obvious—it is numerical order.
+For String objects, order is defi ned according to the Unicode character mapping.
+
 === Comparable
 
-TODO
+[source,java]
+----
+public interface Comparable<T> {
+    public int compareTo(T o);
+}
+
+public class Duck implements Comparable<Duck> {
+    private String name;
+
+    public Duck(String name) {
+        this.name = name;
+    }
+
+    public String toString() {
+        return name;
+    }
+
+    public int compareTo(Duck d) {
+        return name.compareTo(d.name);
+    }
+}
+----
+
+* The number zero is returned when the current object is equal to the argument to compareTo().
+* A number less than zero is returned when the current object is smaller than the argument to compareTo().
+* A number greater than zero is returned when the current object is larger than the argument to compareTo().
 
 === Comparator
 
-TODO
+Sometimes you want to sort an object that did not implement Comparable, or you want to sort objects in different ways at different times.
 
-== Searching and Sorting
+[source,java]
+----
+Comparator<Duck> byWeight = new Comparator<Duck>() {
+    public int compare(Duck d1, Duck d2) {
+    return d1.getWeight() — d2.getWeight();}
+};
 
-TODO
+// or
+Comparator<Duck> byWeight = (d1, d2) -> d1.getWeight()—d2.getWeight();
+
+// use
+Collections.sort(ducks, byWeight);
+----
 
 
