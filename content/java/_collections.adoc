@@ -119,37 +119,66 @@ ArrayList это список, реализованный на основе ма
 LinkedList предпочтительно применять, когда происходит активная работа (вставка/удаление) с серединой списка или в случаях, когда необходимо гарантированное время добавления элемента в список.
 
 === Set
-TODO
+
+HashSet — реализация интерфейса Set, базирующаяся на HashMap.
+Внутри использует объект HashMap для хранения данных.
+В качестве ключа используется добавляемый элемент, а в качестве значения — объект-пустышка (new Object()).
+Из-за особенностей реализации порядок элементов не гарантируется при добавлении.
+
+LinkedHashSet — отличается от HashSet только тем, что в основе лежит LinkedHashMap вместо HashMap.
+Благодаря этому отличию порядок элементов при обходе коллекции является идентичным порядку добавления элементов.
+
+TreeSet — аналогично другим классам-реализациям интерфейса Set содержит в себе объект NavigableMap, что и обуславливает его поведение.
+Предоставляет возможность управлять порядком элементов в коллекции при помощи объекта Comparator, либо сохраняет элементы с использованием "natural ordering".
 
 === Queue
-TODO
+
+image::images/image-2024-05-25-18-30-49-806.png[width=500]
+
+Этот интерфейс описывает коллекции с предопределённым способом вставки и извлечения элементов, а именно — очереди FIFO (first-in-first-out).
+Помимо методов, определённых в интерфейсе Collection, определяет дополнительные методы для извлечения и добавления элементов в очередь.
+Большинство реализаций данного интерфейса находится в пакете java.util.concurrent
+
+PriorityQueue — является единственной прямой реализацией интерфейса Queue (была добавлена, как и интерфейс Queue, в Java 1.5), не считая класса LinkedList, который так же реализует этот интерфейс, но был реализован намного раньше.
+Особенностью данной очереди является возможность управления порядком элементов.
+По-умолчанию, элементы сортируются с использованием «natural ordering», но это поведение может быть переопределено при помощи объекта Comparator, который задаётся при создании очереди.
+Данная коллекция не поддерживает null в качестве элементов.
 
 === Map
 
 *Implementations*
 
-A *HashMap* stores the keys in a hash table. This means that it uses the hashCode() method
-of the keys to retrieve their values more efficiently.
-The main benefit is that adding elements and retrieving the element by key both have
-constant time. The tradeoff is that you lose the order in which you inserted the elements.
+A *HashMap* stores the keys in a hash table.
+This means that it uses the hashCode() method of the keys to retrieve their values more efficiently.
+The main benefit is that adding elements and retrieving the element by key both have constant time.
+The tradeoff is that you lose the order in which you inserted the elements.
 
-Most of the time, you aren’t concerned with this in a map anyway. If you were, you could
-use *LinkedHashMap*.
+Most of the time, you aren’t concerned with this in a map anyway.
+If you were, you could use *LinkedHashMap*.
 
-A *TreeMap* stores the keys in a sorted tree structure. The main benefit is that the keys are
-always in sorted order. The tradeoff is that adding and checking if a key is present are both
-O(log n).
+A *TreeMap* stores the keys in a sorted tree structure.
+The main benefit is that the keys are always in sorted order.
+The tradeoff is that adding and checking if a key is present are both O(log n).
 
-A *Hashtable* is like Vector in that it is really old and thread-safe and that you won’t be
-expected to use it. It contains a lowercase t as a mistake from the olden days. All you have
-to do is be able to pick it out in a lineup. In the form of old school analogies, ArrayList is
-to Vector as HashMap is to Hashtable.
+A *Hashtable* is like Vector in that it is really old and thread-safe and that you won’t be expected to use it.
+It contains a lowercase t as a mistake from the olden days.
+All you have to do is be able to pick it out in a lineup.
+In the form of old school analogies, ArrayList is to Vector as HashMap is to Hashtable.
 
 ==== HashMap
 
+https://habr.com/ru/articles/128017/
+https://habr.com/ru/articles/421179/
+
 ==== LinkedHashMap
 
+https://habr.com/ru/articles/129037/
+
 ==== TreeMap
+
+A TreeMap stores its data in a hierarchical tree with the ability to sort the elements with the help of a custom Comparator.
+
+https://www.baeldung.com/java-treemap-vs-hashmap
 
 === Comparing Collection Types
 
@@ -157,12 +186,24 @@ https://habr.com/ru/articles/237043/
 
 image::images/image-2024-05-25-15-29-33-410.png[width=500]
 
+== Concurrent Collections
+
+image::images/image-2024-05-25-18-39-18-752.png[width=500]
+
+-> OCP : Chapter 7 Concurrency : Using Concurrent Collections
+
 == Comparator vs. Comparable
 
 === Comparable
 
+TODO
+
 === Comparator
 
+TODO
+
 == Searching and Sorting
+
+TODO
 
 
