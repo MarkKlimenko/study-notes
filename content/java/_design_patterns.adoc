@@ -465,24 +465,98 @@ public class ClientThread {
 }
 ----
 
-=== The interpreter pattern
-
 === The iterator pattern
+
+The iterator pattern provides a way to traverse the elements of an aggregate object sequentially without exposing its internal representation.
+
+image::images/image-2024-06-01-15-17-04-857.png[width=500]
+
+Iterators are popular in most programming languages these days.
+
+It is probably most widely used in Java, along with the collections package.
+
+It is also implemented at the language level when a collection is traversed with the following loop construction: for (String item : strCollection)
 
 === The observer pattern
 
+The observer pattern makes the state changes of one object observable to other objects that are registered to be informed.
+
+image::images/image-2024-06-01-15-21-41-740.png[width=500]
+
+* Observer objects are objects that want to be notified whenever Observable objects change.
+* Observable objects are objects that can be watched by Observers
+
+image::images/image-2024-06-01-15-24-28-735.png[500]
+
 === The mediator pattern
+
+The mediator pattern defines an object that encapsulates how a set of objects interacts, reducing their dependency on one another.
+
+image::images/image-2024-06-01-15-27-55-918.jpg[width=500]
 
 === The memento pattern
 
+The memento pattern is used to save the internal state of an object without breaking its encapsulation, and to restore its state at a later stage.
+
+image::images/image-2024-06-01-15-30-39-467.jpg[width=500]
+
+The memento pattern is used whenever rollback operations need to be implemented.
+It can be used in all kinds of atomic transactions in which the object must be reverted to the initial state if one of the actions fails.
+
 === The state pattern
+
+A finite state machine is an important concept in computer science.
+It has a strong mathematical base and it represents an abstract machine that can be in a finite number of states.
+Finite state machines are used in all fields of computer science.
+
+The state pattern is just an implementation of a finite state machine in object-oriented design.
+
+image::images/image-2024-06-01-15-36-14-398.jpg[width=500]
 
 === The strategy pattern
 
+A particular situation specific to behavioral patterns is when we need to change the way to solve a problem with another one.
+As we already learned in the first chapter, changing is bad, while extending is good.
+So, instead of replacing a portion of code with another one, we can encapsulate it in a class.
+Then we can create an abstraction of that class on which our code depends.
+From that point, our code becomes very flexible, as we can now use any class that implements the abstraction we just created.
+
+The strategy pattern defines a family of algorithms, encapsulating each one, and makes them interchangeable.
+
+image::images/image-2024-06-01-15-40-14-034.png[width=500]
+
 === The template method pattern
+
+The idea of using the template method pattern is to avoid writing duplicate code so that developers can focus on core logic.
+
+The template method pattern is best implemented using an abstract class.
+The areas for which we know about the implementation will be provided; the default implementation and the areas that are to be kept open for implementation are marked abstract.
+
+For example, think of a database fetch query at a very high level.
+We need to execute the following steps:
+
+1. Create a connection
+2. Create a query
+3. Execute the query
+4. Parse and return the data
+5. Close the connection We can see that creating and closing the connection part will always remain the same.
+
+So, we can add this as part of the template implementation.
+The remaining methods can be implemented independently for different needs.
 
 === The null object pattern
 
+In the following diagram, we can see that we simply create a NullClass, which can replace the real class in our program.
+As mentioned before, this is just a particular case of the strategy pattern in which we choose the strategy of doing nothing.
+
+image::images/image-2024-06-01-15-57-42-372.png[width=500]
+
 === The visitor pattern
 
+The visitor pattern separates an operation from the object structure on which it operates, allowing the addition of new operations without changing the structure classes.
 
+image::images/image-2024-06-01-15-59-03-806.png[width=500]
+
+image::images/image-2024-06-01-16-01-35-588.png[width=500]
+
+== Structural Patterns
