@@ -403,6 +403,68 @@ The doFilter method also receives the filter chain as a parameter, and it can pa
 
 === The command pattern
 
+*The command pattern does the following:*
+
+* Provides a unified way to encapsulate a command along with the required parameters to execute an action
+* Allows the handling of commands, such as storing them in queues
+
+image::images/image-2024-05-31-22-44-00-789.png[width=500]
+
+*Before the command pattern implementation*
+
+[source,java]
+----
+public void performAction(ActionEvent e) {
+    Object obj = e.getSource();
+
+    if (obj == fileNewMenuItem)
+        doFileNewAction();
+    else if (obj == fileOpenMenuItem)
+        doFileOpenAction();
+    else if (obj == fileOpenRecentMenuItem)
+        doFileOpenRecentAction();
+    else if (obj == fileSaveMenuItem)
+        doFileSaveAction();
+}
+----
+
+*After the command pattern implementation*
+
+[source,java]
+----
+public interface Command {
+    public void execute();
+}
+
+public class OpenMenuItem extends JMenuItem implements Command {
+    public void execute() { }
+}
+
+public void performAction(ActionEvent e) {
+    Command command = (Command)e.getSource();
+    command.execute();
+}
+----
+
+*Example:*
+
+[source,java]
+----
+class RunnableThread implements Runnable {
+    public void run() {
+        // the command implementation code
+    }
+}
+
+public class ClientThread {
+    public static void main(String a[]) {
+        RunnableThread mrt = new RunnableThread();
+        Thread t = new Thread(mrt);
+        t.start();
+    }
+}
+----
+
 === The interpreter pattern
 
 === The iterator pattern
