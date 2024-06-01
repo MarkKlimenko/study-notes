@@ -194,15 +194,169 @@ public enum Elvis {
 }
 ----
 
-=== Builder
+=== Simple factory pattern
 
-=== Factory
+The factory pattern is used to encapsulate the logic to instantiate objects referred through a common interface.
+New classes can be added with minimal changes.
+
+image::images/image-2024-05-31-16-32-33-064.png[width=500]
+
+==== Static factory
+
+[source,java]
+----
+public class VehicleFactory {
+    public enum VehicleType {
+        Bike,Car,Truck
+    }
+
+    public static Vehicle create(VehicleType type) {
+        if (type.equals(VehicleType.Bike))
+            return new Bike();
+        if (type.equals(VehicleType.Car))
+            return new Car();
+        if (type.equals(VehicleType.Truck))
+            return new Truck();
+        else return null;
+    }
+}
+----
 
 === Factory Method
 
+The factory method pattern is an improvement upon the static factory.
+The factory class is made abstract and the code to instantiate specific products is moved to subclasses that implement an abstract method.
+
+image::images/image-2024-05-31-16-40-51-972.png[width=500]
+
+[source,java]
+----
+public abstract class VehicleFactory {
+    protected abstract Vehicle createVehicle(String item);
+    public Vehicle orderVehicle(String size, String color) { }
+}
+
+public class CarFactory extends VehicleFactory {
+    @Override
+    protected Vehicle createVehicle(String size) { }
+}
+
+public class TruckFactory extends VehicleFactory {
+    @Override
+    protected Vehicle createVehicle(String size) { }
+}
+
+// usage
+VehicleFactory carFactory = new CarFactory();
+carFactory.orderVehicle("large", "blue");
+
+VehicleFactory truckFactory = new TruckFactory();
+truckFactory.orderVehicle("large", "blue");
+----
+
+Anonymous concrete factory
+
+[source,java]
+----
+VehicleFactory bikeFactory = new VehicleFactory() {
+    @Override
+    protected Vehicle createVehicle(String size) { }
+};
+bikeFactory.orderVehicle("large", "blue");
+----
+
 === Abstract Factory
 
+The abstract factory is an extended version of the factory method.
+Instead of creating a single type of object, it is used to create a family of related objects.
+If the factory method had one AbstractProduct, the abstract factory has several AbstractProduct classes.
+
+image::images/image-2024-05-31-20-34-16-777.png[width=500]
+
+image::images/image-2024-05-31-20-37-32-630.png[width=500]
+
+If more information required https://www.geeksforgeeks.org/abstract-factory-pattern/
+
+=== Builder
+
+Creating builder classes to encapsulate the logic to instantiate complex objects is consistent with the single responsibility principle and with the open/closed principle.
+The logic to instantiate a complex object is moved to a separate Builder class.
+When we need objects with different structures, we can add new builder classes, so the code is closed for modification and open for extension
+
+image::images/image-2024-05-31-20-44-05-109.png[width=500]
+
+Example:
+
+image::images/image-2024-05-31-20-45-10-498.png[width=500]
+
+==== Simplified builder pattern
+
+In some implementations of the builder pattern, the Director class can be removed.
+In our class example, the logic it encapsulates is quite simple, so in that case we don't really need a director.
+
+image::images/image-2024-05-31-20-48-46-148.png[width=500]
+
+==== Anonymous builders with method chaining
+
+[source,java]
+----
+builder.setColor("Blue")
+    .setEngine("1500cc")
+    .addTank("50")
+    .addTransmission("auto")
+    .build();
+----
+
 === Prototype
+
+It is just a method to clone objects.
+
+There are several situations in which it is required to clone objects that are already instantiated:
+
+* When the creation of a new object relies on an external resource or a hardware-intensive operation
+* When we need a copy of the same object with the same state without having to redo all of the operations to get to that state
+* When we need an instance of an object without knowing to which concrete class it belongs
+
+image::images/image-2024-05-31-20-52-48-711.png[width=500]
+
+==== Shallow clone versus deep clone
+
+When cloning objects, we should be aware of the deepness of cloning.
+When we clone an object that contains simple datatypes, such as int and float, or immutable objects, such as strings, we should simply copy those fields to the new object, and that's it.
+
+A problem arises when our objects contain references to other objects.
+For example, if we have to implement a clone method for a Car class that has an engine and a list of four wheels, we should create not only a new Car object but also a new Engine and four new Wheel objects.
+After all, two cars cannot share the same engine and the same wheels.
+This is called a *deep clone*.
+
+In practice, we should decide whether we need *deep*, *shallow*, or *mixed* cloning based on each scenario.
+
+=== Object pool pattern
+
+The instantiation of objects is one of the most costly operations in terms of performance.
+While in the past this could have been an issue, nowadays we shouldn't be concerned about it.
+However, when we deal with objects that encapsulate external resources, such as database connections, the creation of new objects becomes expensive.
+
+The solution is to implement a mechanism that reuses and shares objects that are expensive to create.
+
+image::images/image-2024-05-31-20-56-58-426.png[width=500]
+
+[source,java]
+----
+public Resource acquireResource() {
+    if (available.size() <= 0) {
+        Resource resource = new Resource();
+        inuse.add(resource);
+        return resource;
+    } else {
+        return available.remove(0);
+    }
+}
+
+public void releaseResource(Resource resource) {
+    available.add(resource);
+}
+----
 
 == Structural patterns
 
