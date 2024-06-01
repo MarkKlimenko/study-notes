@@ -358,45 +358,69 @@ public void releaseResource(Resource resource) {
 }
 ----
 
-== Structural patterns
-
-=== Adapter
-
-=== Bridge
-
-=== Composite
-
-=== Decorator
-
-=== Facade
-
-=== Flyweight
-
-=== Proxy
-
 == Behavioral patterns
 
-=== Chain of responsibility
+Behavioral patterns are patterns that focus on object interaction, communication, and control flows.
+Most behavioral patterns are based on composition and delegation rather than inheritance.
 
-=== Command
+=== The chain-of-responsibility pattern
 
-=== Interpreter
+The chain-of-responsibility pattern chains the handlers in such a way that they will be able to process the request or pass it on if they are not able to do it.
 
-=== Iterator
+image::images/image-2024-05-31-22-09-40-056.png[width=500]
 
-=== Mediator
+[source,java]
+----
+protected Handler successor;
+public void setSuccessor(Handler successor) {
+    this.successor = successor;
+}
 
-=== Memento
+public void handleRequest(Request request) {
+    if (canHandle(request)) {
+        //code to handle the request
+    } else {
+        successor.handleRequest();
+    }
+}
+----
 
-=== Observer
+Car service application example
 
-=== State
+image::images/image-2024-05-31-22-10-21-841.png[width=500]
 
-=== Strategy
+*Applicability and examples*
 
-=== Template
+* *Event handlers:* For example, most GUI frameworks use the chain-ofresponsibility pattern to handle events.
+Let's say, for example, a window contains a panel that contains some buttons.
+We have to write the event handler of the button.
+If we decide to skip it and pass it on, the next one in the chain will be able to handle the request: the panel.
+If the panel skips it, it will go to the window.
+* *Log handlers:* Similar to the event handlers, each log handler will log a specific request based on its status, or it will pass it on to the next handler.
+* *Servlets:* In Java, javax.servlet.Filter (http://docs.oracle.com/javaee/7/api/javax/s
+ervlet/Filter.html) is used to filter requests or responses.
+The doFilter method also receives the filter chain as a parameter, and it can pass the request on.
 
-=== Visitor
+=== The command pattern
 
+=== The interpreter pattern
+
+=== The iterator pattern
+
+=== The observer pattern
+
+=== The mediator pattern
+
+=== The memento pattern
+
+=== The state pattern
+
+=== The strategy pattern
+
+=== The template method pattern
+
+=== The null object pattern
+
+=== The visitor pattern
 
 
