@@ -560,3 +560,36 @@ image::images/image-2024-06-01-15-59-03-806.png[width=500]
 image::images/image-2024-06-01-16-01-35-588.png[width=500]
 
 == Structural Patterns
+
+Structural patterns are patterns that focus on creating complex structures by making use of relations between objects and classes.
+Most structural patterns are based on inheritance.
+
+=== The adapter pattern
+
+The adapter pattern provides a solution for code reusability; it adapts/wraps existing old code to new interfaces, interfaces that were unknown at the design time of the original code.
+
+The intent is to adopt an existing old interface to a new client interface.
+The goal is to reuse as much as possible the old and already tested code, while being free to make changes to the new interface.
+
+image::images/image-2024-06-01-16-05-59-662.png[width=500]
+
+=== The proxy pattern
+
+Whenever you work with Enterprise or Spring beans, mocked instances, and implement AOP, make RMI or JNI calls to another object with the same interface, or directly/indirectly use java.lang.reflect.Proxy, there is a proxy object involved.
+Its purpose is to provide a surrogate for a real object, with exactly the same footprint.
+It delegates the work to it while doing something else before or after the call.
+
+The intent is to provide a surrogate for a real object in order to better control it.
+It is a handle to a real object that behaves like it, thus making the client code to use it just as it would use the real object.
+
+image::images/image-2024-06-01-16-07-37-958.png[width=500]
+
+=== The decorator pattern
+
+=== The bridge pattern
+
+=== The composite pattern
+
+=== The façade pattern
+
+=== The flyweight pattern
