@@ -586,6 +586,15 @@ image::images/image-2024-06-01-16-07-37-958.png[width=500]
 
 === The decorator pattern
 
+There are times when we need to add or remove functionality to/from existing code, without affecting it, and when it is not practical to make a subclass.
+The decorator comes in handy in these cases because it allows doing so without changing the existing code.
+It does this by implementing the same interface, aggregating the object that it is going to decorate, delegating all the common interface calls to it, and implementing in the child classes the new functionality.
+
+The intent is to dynamically extend the existing object's functionality without changing its code.
+It conforms to the original interface and is able to extend the functionally by using composition, rather than subclassing.
+
+image::images/image-2024-06-01-23-59-48-536.png[width=500]
+
 === The bridge pattern
 
 === The composite pattern
