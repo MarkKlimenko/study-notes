@@ -5,6 +5,8 @@
 :icons: font
 :source-highlighter: coderay
 
+image::images/image-2024-06-03-00-13-53-438.png[width=1000]
+
 == Sources
 
 === https://refactoring.guru/design-patterns
@@ -599,6 +601,10 @@ image::images/image-2024-06-01-23-59-48-536.png[width=500]
 
 The intent is to decouple the abstraction from the implementation to allow them to vary independently.
 It does this by using inheritance, both in the public interface and in the implementation.
+
+OR
+
+Lets you split a large class or a set of closely related classes into two separate hierarchies—abstraction and implementation—which can be developed independently of each other.
 
 image::images/image-2024-06-02-21-45-46-832.png[width=500]
 
