@@ -7,7 +7,7 @@
 
 == Sources
 
-=== Design Patterns and Best Practices in Java 9
+=== https://refactoring.guru/design-patterns
 
 == SOLID
 
@@ -597,8 +597,41 @@ image::images/image-2024-06-01-23-59-48-536.png[width=500]
 
 === The bridge pattern
 
+The intent is to decouple the abstraction from the implementation to allow them to vary independently.
+It does this by using inheritance, both in the public interface and in the implementation.
+
+image::images/image-2024-06-02-21-45-46-832.png[width=500]
+
 === The composite pattern
+
+The intent is to enable the modeling of objects into a tree or graph-like structures and treat them in the same manner.
+The client code does not need to know whether a node is an individual object (leaf node) or a composition of objects (a node with children, such as the root node); the client code can make an abstraction of these details and treat them uniformly.
+
+image::images/image-2024-06-02-21-56-39-590.png[width=500]
 
 === The façade pattern
 
+The intent is to provide a single unified interface for a complex subsystem.
+This simplifies the usage of big and complex systems by providing the interface for the most important use cases.
+
+image::images/image-2024-06-02-21-57-24-989.png[width=500]
+
 === The flyweight pattern
+
+Lets you fit more objects into the available amount of RAM by sharing common parts of state between multiple objects instead of keeping all of the data in each object.
+
+image::images/image-2024-06-02-22-20-34-525.png[width=500]
+
+==== Example
+
+* Computer games, bullets and appearance
+* Java String class
+* java.lang.Integer#valueOf(int)
+
+==== Usage
+
+*Flyweight factory*
+
+For more convenient access to various flyweights, you can create a factory method that manages a pool of existing flyweight objects.
+The method accepts the intrinsic state of the desired flyweight from a client, looks for an existing flyweight object matching this state, and returns it if it was found.
+If not, it creates a new flyweight and adds it to the pool.
