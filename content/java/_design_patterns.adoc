@@ -604,8 +604,18 @@ image::images/image-2024-06-02-21-45-46-832.png[width=500]
 
 === The composite pattern
 
+Composite is a structural design pattern that lets you compose objects into tree structures and then work with these structures as if they were individual objects.
+
+OR
+
 The intent is to enable the modeling of objects into a tree or graph-like structures and treat them in the same manner.
 The client code does not need to know whether a node is an individual object (leaf node) or a composition of objects (a node with children, such as the root node); the client code can make an abstraction of these details and treat them uniformly.
+
+Using the Composite pattern makes sense only when the core model of your app can be represented as a tree.
+
+For example, imagine that you have two types of objects: Products and Boxes.
+A Box can contain several Products as well as a number of smaller Boxes.
+These little Boxes can also hold some Products or even smaller Boxes, and so on.
 
 image::images/image-2024-06-02-21-56-39-590.png[width=500]
 
