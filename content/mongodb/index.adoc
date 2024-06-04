@@ -1120,9 +1120,12 @@ AND y > 2
 
 The relevant characteristics are:
 
-* x and y are in the same table. (Can't build an index across two tables.)
-* AND is used. (OR can't be optimized.)
-* One of the tests is with =. (Composite won't help if both are ranges.)
+* x and y are in the same table.
+(Can't build an index across two tables.)
+* AND is used.
+(OR can't be optimized.)
+* One of the tests is with =.
+(Composite won't help if both are ranges.)
 * y is a "range" (examples: y>2, y LIKE 'm%', y BETWEEN ... AND ...).
 
 *The general rule is:*
@@ -1133,4 +1136,262 @@ The relevant characteristics are:
 
 IMPORTANT: For WHERE x = 1 AND y = 2 (both =), it does not matter whether you have INDEX(x,y) or INDEX(y,x) .
 
+==== Choosing key directions
 
+To optimize compound sorts in different directions, we need to use an index with matching directions.
+In this example, we could use `{"age" : 1, "username" : -1}`
+
+Note that inverse indexes (multiplying each direction by −1) are equivalent: `{"age" : 1, "username" : -1}` suits the same queries that `{"age" : -1, "username" : 1}`
+
+Index direction only really matters when you’re sorting based on multiple criteria.
+
+==== Using covered queries
+
+In the preceding examples, the index was always used to find the correct document and then follow a pointer back to fetch the actual document.
+However, if your query is only looking for the fields that are included in the index, it does not need to fetch the document.
+When an index contains all the values requested by a query, the query is considered to be covered.
+Whenever practical, use covered queries in preference to going back to documents.
+You can make your working set much smaller that way.
+
+==== Implicit indexes
+
+If we have an index on {"age" : 1, "username" : 1}, the "age" field is sorted identically to the way it would be if we had an index on just {"age" : 1}.
+Thus, the compound index can be used the way an index on {"age" : 1} by itself would be.
+
+This can be generalized to as many keys as necessary: if an index has N keys, you get a “free” index on any prefix of those keys.
+For example, if we have an index that looks like {"a": 1, "b": 1, "c": 1, ..., "z": 1}, we effectively have indexes on
+{"a": 1}, {"a": 1, "b" : 1}, {"a": 1, "b": 1, "c": 1}, and so on.
+
+Note that this doesn’t hold for any subset of keys: queries that would use the index
+{"b": 1} or {"a": 1, "c": 1} (for example) will not be optimized.
+Only queries that can use a prefix of the index can take advantage of it.
+
+=== Indexing Objects and Arrays
+
+[source,js]
+----
+//{
+//    "username" : "sid",
+//    "loc" : {
+//        "ip" : "1.2.3.4",
+//        "city" : "Springfield",
+//        "state" : "NY"
+//    }
+//}
+
+db.users.createIndex({"loc.city" : 1})
+
+// index Array
+db.blog.createIndex({"comments.10.votes": 1})
+----
+
+=== Explain Output
+
+explain gives you lots of information about your queries.
+It’s one of the most important diagnostic tools there is for slow queries.
+
+For any query, you can add a call to explain at the end (the way you would add a sort or limit, but explain must be the last call).
+
+There are two types of explain output that you’ll see most commonly: for indexed and nonindexed queries.
+Special index types may create slightly different query plans, but most fields should be similar.
+Also, sharding returns a conglomerate of explains, as it runs the query on multiple servers.
+
+The most basic type of explain is on a query that doesn’t use an index.
+You can tell that a query doesn’t use an index because it uses a "COLLSCAN".
+
+*see explain Output in Chapter 5: Indexes*
+
+=== Types of Indexes
+
+==== Unique Indexes
+
+[source,js]
+----
+db.users.createIndex({"firstname" : 1},
+    {"unique" : true, "partialFilterExpression":{
+    "firstname": {$exists: true } } } )
+----
+
+==== Partial Indexes
+
+If you have a field that may or may not exist but must be unique when it does, you can combine the "unique" option with the "partial" option.
+
+=== Index Administration
+
+All of the information about a database’s indexes is stored in the system.indexes collection.
+This is a reserved collection, so you cannot modify its documents or remove documents from it.
+You can manipulate it only through the createIndex, createIn dexes, and dropIndexes database commands.
+
+When you create an index, you can see its metainformation in system.indexes.
+You can also run db.collectionName.getIndexes() to see information about all the indexes on a given collection
+
+==== Identifying Indexes
+
+[source,js]
+----
+db.soup.createIndex({"a" : 1, "b" : 1, "c" : 1, ..., "z" : 1},
+... {"name" : "alphabet"})
+----
+
+==== Changing Indexes
+
+[source,js]
+----
+db.people.dropIndex("x_1_y_1")
+----
+
+== Special Index and Collection Types
+
+This chapter covers the special collections and index types MongoDB has available, including:
+
+* Capped collections for queue-like data
+* TTL indexes for caches
+* Full-text indexes for simple string searching
+* Geospatial indexes for 2D and spherical geometries
+* GridFS for storing large files
+
+=== Geospatial Indexes
+
+MongoDB has two types of geospatial indexes: 2dsphere and 2d. 2dsphere indexes work with spherical geometries that model the surface of the earth based on the WGS84 datum.
+This datum models the surface of the earth as an oblate spheroid, meaning that there is some flattening at the poles.
+Distance calculations using 2sphere indexes, therefore, take the shape of the earth into account and provide a more accurate treatment of distance between, for example, two cities, than do 2d indexes.
+Use 2d indexes for points stored on a two-dimensional plane.
+
+A point is given by a two-element array, representing [longitude, latitude]
+
+[source,json]
+----
+{
+    "name" : "New York City",
+    "loc" : {
+        "type" : "Point",
+        "coordinates" : [50, 2]
+    }
+}
+
+{
+  "name" : "Hudson River",
+  "loc" : {
+    "type" : "LineString",
+    "coordinates" : [[0,1], [0,2], [1,2]]
+  }
+}
+----
+
+You can create a geospatial index using the "2dsphere" type with createIndex:
+
+[source,js]
+----
+db.openStreetMap.createIndex({"loc" : "2dsphere"})
+----
+
+==== Types of Geospatial Queries
+
+intersection, within, and nearness
+
+=== Indexes for Full Text Search
+
+text indexes in MongoDB support full-text search requirements.
+This type of text index should not be confused with the MongoDB Atlas Full-Text Search Indexes, which utilize Apache Lucene for additional text search capabilities when compared to MongoDB text indexes.
+Use a text index if your application needs to enable users to submit keyword queries that should match titles, descriptions, and text in other fields within a collection.
+
+==== Creating a Text Index
+
+[source,js]
+----
+db.articles.createIndex({"title": "text",
+                        "body" : "text"})
+----
+
+You can control the relative importance MongoDB attaches to each field by specifying weights
+
+[source,js]
+----
+db.articles.createIndex({"title": "text","body": "text"},
+        {"weights" : {"title" : 3,"body" : 2}}
+)
+----
+
+For some collections, you may not know which fields a document will contain.
+You can create a full-text index on all string fields in a document by creating an index on "$**"—this not only indexes all top-level string fields, but also searches embedded documents and arrays for string fields:
+
+[source,js]
+----
+db.articles.createIndex({"$**" : "text"})
+----
+
+==== Text Search
+
+Use the "$text" query operator to perform text searches on a collection with a text index.
+
+[source,js]
+----
+db.articles.find({"$text": {"$search": "impact crater lunar"}},
+    {title: 1}
+    ).limit(10)
+
+/*{ "_id" : "170375", "title" : "Chengdu" }
+{ "_id" : "34331213", "title" : "Avengers vs. X-Men" }
+{ "_id" : "498834", "title" : "Culture of Tunisia" }
+{ "_id" : "602564", "title" : "ABC Warriors" }
+{ "_id" : "40255", "title" : "Jupiter (mythology)" }
+{ "_id" : "80356", "title" : "History of Vietnam" }*/
+----
+
+==== Optimizing Full-Text Search
+
+There are a couple of ways to optimize full-text searches.
+If you can first narrow your search results by other criteria, you can create a compound index with a prefix of those criteria and then the full-text fields:
+
+[source,js]
+----
+db.blog.createIndex({"date" : 1, "post" : "text"})
+----
+
+=== Capped Collections
+
+“Normal” collections in MongoDB are created dynamically and automatically grow in size to fit additional data.
+MongoDB also supports a different type of collection, called a capped collection, which is created in advance and is fixed in size
+
+[source,js]
+----
+db.createCollection("my_collection", {"capped" : true, "size" : 100000});
+----
+
+=== Time-To-Live Indexes
+
+If you need a more flexible age-out system, TTL indexes allow you to set a timeout for each document.
+
+[source,js]
+----
+// 24-hour timeout
+db.sessions.createIndex({"lastUpdated" : 1}, {"expireAfterSeconds" : 60*60*24})
+----
+
+This creates a TTL index on the "lastUpdated" field.
+If a document’s "lastUpdated" field exists and is a date, the document will be removed once the server time is "expireAfterSeconds" seconds ahead of the document’s time.
+
+To prevent an active session from being removed, you can update the "lastUpdated" field to the current time whenever there is activity.
+Once "lastUpdated" is 24 hours old, the document will be removed.
+
+=== Storing Files with GridFS
+
+GridFS is a mechanism for storing large binary files in MongoDB.
+There are several reasons why you might consider using GridFS for file storage:
+
+* Using GridFS can simplify your stack.
+If you’re already using MongoDB, you might be able to use GridFS instead of a separate tool for file storage.
+* GridFS will leverage any existing replication or autosharding that you’ve set up for MongoDB, so getting failover and scale-out for file storage is easier.
+* GridFS can alleviate some of the issues that certain filesystems can exhibit when being used to store user uploads.
+For example, GridFS does not have issues with storing large numbers of files in the same directory.
+
+There are some downsides, too:
+
+* Performance is slower.
+Accessing files from MongoDB will not be as fast as going directly through the filesystem.
+* You can only modify documents by deleting them and resaving the whole thing.
+MongoDB stores files as multiple documents, so it cannot lock all of the chunks in a file at the same time.
+
+*look at Chapter 6: Special Index and Collection Types for more information*
+
+== Aggregation Framework
