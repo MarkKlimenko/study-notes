@@ -1079,5 +1079,58 @@ Otherwise, it will sit around in the database hogging resources until the server
 
 == Indexes
 
+=== Creating an Index
+
+[source,js]
+----
+db.users.createIndex({"username" : 1})
+db.users.createIndex({"age" : 1, "username" : 1})
+----
+
+**In general you should design compound indexes such that fields on which you will be using equality filters come before those on which your application will use multivalue filters.**
+
+To use the index to *sort*, MongoDB needs to be able to walk the index keys in order.
+This means that we need to include the sort field among the compound index keys.
+
+Note that we include the sort component immediately after the equality filter, but before the multivalue filter.
+
+To recap, when designing a compound index:
+• Keys for equality filters should appear first.
+• Keys used for sorting should appear before multivalue fields.
+• Keys for multivalue filters should appear last.
+
+Example:
+
+[source,js]
+----
+db.students.find({student_id:{$gt:500000}, class_id:54})
+    .sort({final_grade:1})
+    .explain("executionStats")
+
+db.students.createIndex({class_id:1, final_grade:1, student_id:1})
+----
+
+==== Rules for SQL and noSQL
+
+[source,sql]
+----
+WHERE x = 1
+AND y > 2
+----
+
+The relevant characteristics are:
+
+* x and y are in the same table. (Can't build an index across two tables.)
+* AND is used. (OR can't be optimized.)
+* One of the tests is with =. (Composite won't help if both are ranges.)
+* y is a "range" (examples: y>2, y LIKE 'm%', y BETWEEN ... AND ...).
+
+*The general rule is:*
+
+* Put all the = columns first (x in my example)
+* Put one range column last (y)
+* That is, you must order it INDEX(x,y).
+
+IMPORTANT: For WHERE x = 1 AND y = 2 (both =), it does not matter whether you have INDEX(x,y) or INDEX(y,x) .
 
 
