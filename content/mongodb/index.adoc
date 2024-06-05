@@ -1395,3 +1395,103 @@ MongoDB stores files as multiple documents, so it cannot lock all of the chunks 
 *look at Chapter 6: Special Index and Collection Types for more information*
 
 == Aggregation Framework
+
+MongoDB provides powerful support for running analytics natively using the aggregation framework.
+
+The aggregation framework is based on the concept of a pipeline.
+
+[source,js]
+----
+db.companies.aggregate([{$match: {founded_year: 2004}}])
+// or
+db.companies.find({founded_year: 2004})
+
+// add specific fields
+db.companies.aggregate([{$match: {founded_year: 2004}},
+    {$project: {
+        _id: 0,
+        name: 1,
+        founded_year: 1
+    }}
+])
+
+// add limit
+db.companies.aggregate([
+    {$match: {founded_year: 2004}},
+    {$limit: 5},
+    {$project: {
+        _id: 0,
+        name: 1}}
+])
+
+// add sort
+db.companies.aggregate([
+    { $match: { founded_year: 2004 } },
+    { $sort: { name: 1} },
+    { $limit: 5 },
+    { $project: {
+        _id: 0,
+        name: 1 } }
+])
+
+// add skip
+db.companies.aggregate([
+    {$match: {founded_year: 2004}},
+    {$sort: {name: 1}},
+    {$skip: 10},
+    {$limit: 5},
+    {$project: {
+        _id: 0,
+        name: 1}},
+])
+----
+
+=== $project
+
+Promotes required fields
+
+[source,js]
+----
+db.companies.aggregate([
+{$match: {"funding_rounds.investments.financial_org.permalink": "greylock" }},
+{$project: {
+    _id: 0,
+    name: 1,
+    ipo: "$ipo.pub_year",
+    valuation: "$ipo.valuation_amount",
+    funders: "$funding_rounds.investments.financial_org.permalink"
+    }}
+]).pretty()
+----
+
+=== $unwind
+=== Array Expressions
+=== Accumulators
+
+[source,js]
+----
+db.companies.aggregate([
+    { $match: { "funding_rounds": { $exists: true, $ne: [ ]} } },
+    { $project: {
+        _id: 0,
+        name: 1,
+        largest_round: { $max: "$funding_rounds.raised_amount" }
+    }}
+])
+----
+
+=== Grouping
+
+[source,js]
+----
+db.companies.aggregate([
+    { $group: {
+        _id: { founded_year: "$founded_year" },
+        average_number_of_employees: { $avg: "$number_of_employees" }
+    }},
+    { $sort: { average_number_of_employees: -1 } }
+])
+----
+
+== Transactions
+
