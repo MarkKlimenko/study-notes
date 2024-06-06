@@ -1465,7 +1465,9 @@ db.companies.aggregate([
 ----
 
 === $unwind
+
 === Array Expressions
+
 === Accumulators
 
 [source,js]
@@ -1494,4 +1496,41 @@ db.companies.aggregate([
 ----
 
 == Transactions
+
+In order to use transactions, your MongoDB deployment must be on MongoDB version 4.2 or later and your MongoDB drivers must be updated for MongoDB 4.2 or later.
+
+=== A Definition of ACID
+
+ACID is an acronym for Atomicity, Consistency, Isolation, and Durability.
+
+Atomicity ensures that all operations inside a transaction will either be applied or nothing will be applied.
+A transaction can never be partially applied; either it is committed or it aborts.
+
+Consistency ensures that if a transaction succeeds, the database will move from one consistent state to the next consistent state.
+
+Isolation is the property that permits multiple transactions to run at the same time in your database.
+It guarantees that a transaction will not view the partial results of any other transaction, which means multiple parallel transactions will have the same results as running each of the transactions sequentially.
+
+Durability ensures that when a transaction is committed all data will persist even in the case of a system failure.
+
+=== Use Transactions
+
+MongoDB provides two APIs to use transactions.
+The first is a similar syntax to relational databases (e.g., start_transaction and commit_transaction) called the core API and the second is called the callback API, which is the recommended approach to using transactions.
+
+The core API does not provide retry logic for the majority of errors and requires the developer to code the logic for the operations, the transaction commit function, and any retry and error logic required.
+
+The callback API provides a single function that wraps a large degree of functionality when compared to the core API, including starting a transaction associated with a specified logical session, executing a function supplied as the callback function, and then committing the transaction (or aborting on error).
+This function also includes retry logic that handle commit errors.
+The callback API was added in MongoDB 4.2 to simplify application development with transactions as well as make it easier to add application retry logic to handle any transaction errors.
+
+image::../java/images/image-2024-06-06-15-01-45-871.png[width=500]
+
+image::../java/images/image-2024-06-06-15-06-50-836.png[width=500]
+
+== Application Design
+
+*chapter 9*
+
+==
 
