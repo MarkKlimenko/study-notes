@@ -131,6 +131,14 @@ If the messages were successfully written to Kafka, return a RecordMetaData obje
 If failed, the broker will return an error.
 The producer may retry sending the message a few more times before giving up and returning an error.
 
+==== Idempotent Kafka Producer
+
+When `enable.idempotence` is set to `true`, each producer gets assigned a Producer Id (PID) and the PIDis included every time a producer sends messages to a broker.
+Additionally, each message gets a monotonically increasing sequence number (different from the offset - used only for protocol purposes).
+A separate sequence is maintained for each topic partition that a producer sends messages to.
+On the broker side, on a per partition basis, it keeps track of the largest PID-Sequence Number combination that is successfully written.
+When a lower sequence number is received, it is discarded.
+
 ==== Batches
 
 Messages are written into Kafka in batches.
