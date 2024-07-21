@@ -1,0 +1,12 @@
+= Concurrence
+:sectnums:
+:toc: left
+:toclevels: 5
+:icons: font
+:source-highlighter: coderay
+
+== Java Virtual Threads
+
+https://jenkov.com/tutorials/java-concurrency/java-virtual-threads.html
+
+

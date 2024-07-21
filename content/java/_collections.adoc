@@ -172,11 +172,14 @@ https://habr.com/ru/articles/128017/
 https://habr.com/ru/articles/421179/
 
 * *table* — Массив типа Entry[], который является хранилищем ссылок на списки (цепочки) значений;
-* *loadFactor* — Коэффициент загрузки. Значение по умолчанию 0.75 является хорошим компромиссом между временем доступа и объемом хранимых данных;
-* *threshold* — Предельное количество элементов, при достижении которого, размер хэш-таблицы увеличивается вдвое. Рассчитывается по формуле (capacity * loadFactor);
+* *loadFactor* — Коэффициент загрузки.
+Значение по умолчанию 0.75 является хорошим компромиссом между временем доступа и объемом хранимых данных;
+* *threshold* — Предельное количество элементов, при достижении которого, размер хэш-таблицы увеличивается вдвое.
+Рассчитывается по формуле (capacity * loadFactor);
 * *size* — Количество элементов HashMap-а;
 
 *Изменения в Java 8*
+
 ----
 Как мы уже знаем в случае возникновения коллизий объект node сохраняется в структуре данных "связанный список" и метод equals() используется для сравнения ключей. Это сравнения для поиска верного ключа в связанном списке -линейная операция и в худшем случае сложность равнa O(n).
 
@@ -204,6 +207,43 @@ image::images/image-2024-05-25-15-29-33-410.png[width=500]
 image::images/image-2024-05-25-18-39-18-752.png[width=500]
 
 -> OCP : Chapter 7 Concurrency : Using Concurrent Collections
+
+=== ConcurrentHashMap
+
+It allows concurrent access to the map.
+Part of the map called Segment (internal data structure) is only getting locked while adding or updating the map.
+So ConcurrentHashMap allows concurrent threads to read the value without locking at all.
+This data structure was introduced to improve performance.
+
+IMPORTANT: Нужно отметить, что реализация ConcurrentHashMap в Java 1.8 была существенно изменена с 1.7.
+В 1.7 это была идея сегментов, где число сегментов равно уровню параллелизма.
+В java 8 массив бакетов представляет собой единый массив.
+
+The main difference between ConcurrentHashMap and a regular HashMap is that the first implements total concurrency for reads and high concurrency for writes.
+
+Read operations are guaranteed not to be blocked or block a key.
+Write operations are blocked and block other writes at the map Entry level.
+These two ideas are important in environments where we want to achieve high throughput and eventual consistency.
+
+HashTable and Collections.synchronizedMap collections also implement concurrency for reads and writes.
+However, they are less efficient because they lock the entire collection instead of locking just the Entry at which the thread is writing.
+
+On the other hand, the ConcurrentHashMap class locks at a map Entry level.
+Thus, other threads are not blocked from writing on other map keys.
+Therefore, to achieve high throughput, ConcurrentHashMap in multi-thread environments is a better option when compared to HashTable and synchronizedMap collections.
+
+The ConcurrentHashMap implements eventual consistency for reads.
+That means we won’t always read a consistent value (the most updated one), but once the map stops receiving writes, then reads become consistent again.
+Check out this introduction to transactions to get more details about eventual consistency.
+
+Iterators, Spliterators and Enumerations return elements reflecting the state of the hash table at some point at or since the creation of the iterator/enumeration.
+They do not throw ConcurrentModificationException.
+However, iterators are designed to be used by only one thread at a time.
+
+https://dzone.com/articles/how-concurrenthashmap-works-internally-in-java
+https://habr.com/ru/articles/327186/
+https://www.baeldung.com/concurrenthashmap-reading-and-writing
+https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ConcurrentHashMap.html
 
 == Comparator vs. Comparable
 
